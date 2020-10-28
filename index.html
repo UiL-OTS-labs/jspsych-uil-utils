@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- include jsPsych first -->
+        <script src="https://web-experiments.lab.hum.uu.nl/jspsych/6.1.0/jspsych.js"></script>
+        <script src="https://web-experiments.lab.hum.uu.nl/jspsych/6.1.0/plugins/jspsych-html-button-response.js"></script>
+        <script src="jspsych-uil-utils.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <p>For now you can play with the browser console to examine the jspsych uil utils</p>
+    </body>
+    <script>
+
+        let start_screen = {
+            type: 'html-button-response',
+            stimulus: "Press the ok button to continue", 
+            choices: ["OK"],
+            response_ends_trial: true
+        };
+
+        jsPsych.init(
+            {
+                timeline:[start_screen]
+            }
+        )
+    </script>
+</html>
