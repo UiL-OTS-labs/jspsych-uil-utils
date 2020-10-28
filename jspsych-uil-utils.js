@@ -74,24 +74,27 @@ var uil = {};
      * @returns {boolean} True if the browser has a touch screen
      */
     context.isTouchCapable = function () {
-        let hasTouchScreen = false;
+        let has_touchscreen = false;
         // (ms)maxTouchPoints refers to the amount of fingers that can be
         // registered on a screen
         if ("maxTouchPoints" in navigator) {
-            hasTouchScreen = navigator.maxTouchPoints > 0;
+            has_touchscreen = navigator.maxTouchPoints > 0;
         } else if ("msMaxTouchPoints" in navigator) {
-            hasTouchScreen = navigator.msMaxTouchPoints > 0;
+            has_touchscreen = navigator.msMaxTouchPoints > 0;
         } else {
             // pointer:coarse indicates the pointer isn't accurate, which mostly
             // corresponds to touch
-            var mQ = window.matchMedia && matchMedia("(pointer:coarse)");
-            if (mQ && mQ.media === "(pointer:coarse)") {
-                // Double negation to cast mQ.matches to a bool (I think)
-                hasTouchScreen = !!mQ.matches;
+            let media_query = window.matchMedia && matchMedia(
+                "(pointer:coarse)"
+            );
+            if (media_query && media_query.media === "(pointer:coarse)") {
+                // Double negation to cast media_query.matches to a bool
+                // (I think)
+                has_touchscreen = !!media_query.matches;
             }
         }
 
-        return hasTouchScreen
+        return has_touchscreen
     }
 
 })(uil);
