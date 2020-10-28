@@ -55,7 +55,7 @@ var uil = {};
     }
 
     function isOnline(protocol) {
-        return protocol === "http:" || protocol == "https:"
+        return protocol === "http:" || protocol === "https:"
     }
 
     /**
@@ -64,6 +64,7 @@ var uil = {};
      * @private
      * @param {string} access_key The key obtain while registering the dataserver
      * @param {string} server the server to which the data should be posted.
+     * @param {string} data the research data to send to the datastorage server.
      */
     function saveOnDataServer(access_key, server, data) {
 
@@ -73,12 +74,12 @@ var uil = {};
         // Don't change, server only accepts plain text
         xhr.setRequestHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_PLAIN); 
         xhr.onload = function() {
-            if(xhr.status == 200){
+            if(xhr.status === 200){
                 console.log("Upload status = 200 " + xhr.response);
             }
             else {
-                console.log("Error while uploading status = " + xhr.status);
-                console.log("Response = " + xhr.response);
+                console.error("Error while uploading status = " + xhr.status);
+                console.error("Response = " + xhr.response);
             }
         };
         xhr.send(data);
@@ -105,7 +106,7 @@ var uil = {};
     context.saveData = function (access_key, acc_server=false) {
 
         if (typeof(access_key) === undefined) {
-            console.log("Function argument access_key is undefined.");
+            console.error("Function argument access_key is undefined.");
             return;
         }
 
