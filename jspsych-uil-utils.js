@@ -20,7 +20,7 @@
 
 
 /**
- * Namespace global variable
+ * Namespace global variable called uil.
  */
 var uil = {};
 
@@ -74,8 +74,11 @@ var uil = {};
         xhr.setRequestHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_PLAIN); 
         xhr.onload = function() {
             if(xhr.status == 200){
-                var response = JSON.parse(xhr.response);
-                console.log("Upload status = " + xhr.response);
+                console.log("Upload status = 200 " + xhr.response);
+            }
+            else {
+                console.log("Error while uploading status = " + xhr.status);
+                console.log("Response = " + xhr.response);
             }
         };
         xhr.send(data);
@@ -101,8 +104,14 @@ var uil = {};
      */
     context.saveData = function (access_key, acc_server=false) {
 
+        if (typeof(access_key) === undefined) {
+            console.log("Function argument access_key is undefined.");
+            return;
+        }
+
         let is_online = isOnline(getProtocol());
         let data = jsPsych.data.get().json();
+        let key = access_key.trim();
         
         if (is_online) {
             let server = "";
