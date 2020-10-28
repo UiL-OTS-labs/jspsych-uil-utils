@@ -120,7 +120,7 @@ var uil = {};
             else
                 server = DATA_STORE_ACCEPTATION_SERVER;
 
-            saveOnDataServer(access_key, server, data);
+            saveOnDataServer(key, server, data);
         }
         else {
             jsPsych.data.displayData();
