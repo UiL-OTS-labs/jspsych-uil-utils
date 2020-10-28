@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 /*
  * one line to give the program's name and an idea of what it does.
  * Copyright (C) 2020  Maarten Duijndam
@@ -20,18 +20,112 @@
 
 
 /**
- * Namespace global variable
+ * Namespace global variable called uil.
  */
 var uil = {};
 
 /**
  * populate the uil namespace with functions.
  */
-(function (context) {
-    context.saveData = function (data, id) {
-        console.log("logging: " + JSON.stringify(data));
-        console.log("id = " + id);
-        a = 1;
+(function(context) {
+
+    /* ********* constants *********** */
+
+    const DATA_STORE_PRODUCTION_SERVER =
+        'https://experiment-datastore.lab.hum.uu.nl/api/';
+
+    const DATA_STORE_ACCEPTATION_SERVER =
+        'https://experiment-datastore.acc.lab.hum.uu.nl/api/';
+
+    const DATA_UPLOAD_DIR = '/upload/';
+
+    const POST = 'POST';
+
+    const CONTENT_TYPE = 'Content-Type';
+    const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
+
+    /* ************ private functions ************* */
+
+    function getProtocol() {
+        return window.location.protocol;
+    }
+
+    function isFileProtocol(protocol) {
+        return protocol === "file:";
+    }
+
+    function isOnline(protocol) {
+        return protocol === "http:" || protocol === "https:"
+    }
+
+    /**
+     * saves the data obtained from jsPsych on the webserver.
+     *
+     * @private
+     * @param {string} access_key The key obtain while registering the dataserver
+     * @param {string} server the server to which the data should be posted.
+     * @param {string} data the research data to send to the datastorage server.
+     */
+    function saveOnDataServer(access_key, server, data) {
+
+        var xhr = new XMLHttpRequest();
+        xhr.open(POST, server + access_key + DATA_UPLOAD_DIR);
+
+        // Don't change, server only accepts plain text
+        xhr.setRequestHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_PLAIN); 
+        xhr.onload = function() {
+            if(xhr.status === 200){
+                console.log("Upload status = 200 " + xhr.response);
+            }
+            else {
+                console.error("Error while uploading status = " + xhr.status);
+                console.error("Response = " + xhr.response);
+            }
+        };
+        xhr.send(data);
+    }
+
+
+    /* ************ public functions ************** */
+
+    /**
+     * Saves data to the uilots data server or displays the data.
+     *
+     * Saves data to the uilots data server or displays the data 
+     * in the browser window. When the experiment is hosted via an http(s)://
+     * server the data will be send to the data server, otherwise this function
+     * assumes that you are testing your experiment on your own pc via
+     * the file protocol.
+     *
+     * @param {string} access_key, the key obtain from the datastore server
+     * @param {bool}   acc_server, true if the data should be stored at the
+     *                 "acceptation server" for testing purposes. This parameter
+     *                 is only usefull when running the experiment online
+     * @memberof uil
+     */
+    context.saveData = function (access_key, acc_server=false) {
+
+        if (typeof(access_key) === undefined) {
+            console.error("Function argument access_key is undefined.");
+            return;
+        }
+
+        let is_online = isOnline(getProtocol());
+        let data = jsPsych.data.get().json();
+        let key = access_key.trim();
+        
+        if (is_online) {
+            let server = "";
+            if (!acc_server) 
+                server = DATA_STORE_PRODUCTION_SERVER;
+            else
+                server = DATA_STORE_ACCEPTATION_SERVER;
+
+            saveOnDataServer(key, server, data);
+        }
+        else {
+            jsPsych.data.displayData();
+        }
     }
 
     /**
