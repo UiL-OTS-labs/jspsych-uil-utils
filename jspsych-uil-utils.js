@@ -44,6 +44,8 @@ var uil = {};
     const CONTENT_TYPE = 'Content-Type';
     const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
 
+    const LIBRARIES = ['jspsych-uil-randomisation.js']
+
     /* ************ private functions ************* */
 
     function getProtocol() {
@@ -190,5 +192,28 @@ var uil = {};
 
         return has_touchscreen
     }
+
+    /* ********* file loading *********** */
+
+    // The directory this script lives in
+    let scriptDir = document.currentScript.baseURI.split('/').slice(0, -1).join('/');
+
+    /**
+     * Load in a separate sub-library.
+     * @param library The name of the file to load in
+     */
+    context.loadLibrary = function (library) {
+        var script = document.createElement('script');
+        script.src = scriptDir + '/' + library;
+
+        document.head.appendChild(script)
+    }
+
+    function loadAllLibraries() {
+        LIBRARIES.forEach(library => context.loadLibrary(library))
+    }
+
+    // Load in all libraries
+    loadAllLibraries()
 
 })(uil);
