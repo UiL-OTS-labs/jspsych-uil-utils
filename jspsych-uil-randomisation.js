@@ -23,6 +23,8 @@ if (typeof uil === 'undefined')
         "Refusing to load randomisation functions")
 else
 {
+    uil.randomisation = {};
+
     (function (context) {
 
         /**
@@ -127,5 +129,5 @@ else
 
             return order
         }
-    })(uil)
+    })(uil.randomisation)
 }
