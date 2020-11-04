@@ -58,8 +58,7 @@ else
             attempt = 0,
         ) {
             // Stop after 10 randomize attempts, it's probably hopeless.
-            if(attempt > 10)
-            {
+            if(attempt > 10) {
                 console.error("Could not shuffle questions! This is most " +
                     "likely because there is no valid order to be made with " +
                     "the current max_same_type value!")

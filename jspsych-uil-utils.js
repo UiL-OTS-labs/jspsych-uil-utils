@@ -196,7 +196,7 @@ var uil = {};
     /* ********* file loading *********** */
 
     // The directory this script lives in
-    let scriptDir = document.currentScript.baseURI.split('/').slice(0, -1).join('/');
+    const scriptDir = document.currentScript.baseURI.split('/').slice(0, -1).join('/');
 
     /**
      * Load in a separate sub-library.
