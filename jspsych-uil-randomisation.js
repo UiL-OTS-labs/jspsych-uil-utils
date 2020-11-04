@@ -20,9 +20,16 @@
 
 if (typeof uil === 'undefined')
     console.error("UiL Main library not loaded! " +
-        "Refusing to load randomisation functions")
+        "Refusing to load randomisation functions");
 else
 {
+    if ('randomisation' in uil) {
+        console.warn(
+            "uil.randomisation already exists, this is unexpected, " +
+            "we'll overwrite it."
+        );
+    }
+
     uil.randomisation = {};
 
     (function (context) {
@@ -61,7 +68,7 @@ else
             if(attempt > 10) {
                 console.error("Could not shuffle questions! This is most " +
                     "likely because there is no valid order to be made with " +
-                    "the current max_same_type value!")
+                    "the current max_same_type value!");
                 return null;
             }
 
@@ -93,7 +100,7 @@ else
                 // Pick a random item
                 let item = stimuli[Math.floor(Math.random()*stimuli.length)];
                 if (typeof item[type_key] === 'undefined') {
-                    console.error("The following item has no type:", item)
+                    console.error("The following item has no type:", item);
                     return null;
                 }
 
@@ -126,7 +133,7 @@ else
                 }
             }
 
-            return order
+            return order;
         }
     })(uil.randomisation)
 }
