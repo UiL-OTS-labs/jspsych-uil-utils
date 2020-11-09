@@ -204,7 +204,6 @@ var uil = {};
      * @param library The name of the file to load in
      */
     context.loadLibrary = function (library) {
-        console.log(SCRIPT_DIR, library, document.currentScript)
         var script = document.createElement('script');
         script.src = SCRIPT_DIR + '/' + library;
 
