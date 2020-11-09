@@ -47,7 +47,7 @@ var uil = {};
     const LIBRARIES = ['jspsych-uil-randomisation.js']
     
     // The directory this script lives in
-    const SCRIPT_DIR = document.currentScript.baseURI.split('/').slice(0, -1).join('/');
+    const SCRIPT_DIR = document.currentScript.src.split('/').slice(0, -1).join('/');
 
 
     /* ************ private functions ************* */
@@ -204,6 +204,7 @@ var uil = {};
      * @param library The name of the file to load in
      */
     context.loadLibrary = function (library) {
+        console.log(SCRIPT_DIR, library, document.currentScript)
         var script = document.createElement('script');
         script.src = SCRIPT_DIR + '/' + library;
 
