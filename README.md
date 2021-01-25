@@ -28,9 +28,9 @@ it might depend on variables defined in jsPsych.
 The next example is taken from the uilots visual lexical descision with visual
 prime boiler plate :
 
-
-    <html>
-      <head>
+```html
+<html>
+    <head>
         <title>My experiment title</title>
         <script src="https://web-experiments.lab.hum.uu.nl/jspsych/6.1.0/jspsych.js"></script>
         <script src="https://web-experiments.lab.hum.uu.nl/jspsych/6.1.0/plugins/jspsych-html-keyboard-response.js"></script>
@@ -44,19 +44,22 @@ prime boiler plate :
         <script src="stimuli.js"></script>
         <script src="globals.js"></script>
         <script src="instructions.js"></script>
-      </head>
-      <body>
-      </body>
-      <script>
-    /* Create timeline */
-    jsPsych.init({
-        timeline: timeline,
-        on_finish : function () {
-            uil.saveData(ACCESS_KEY);
-            // or to save to the acceptation server:
-            // uil.saveData(ACCESS_KEY, true);
-      	}
-    );
-      </script>
-    </html>
+    </head>
+    <body>
+    </body>
+    <script>
+        
+/* Create timeline */
 
+jsPsych.init({
+timeline: timeline,
+on_finish : function () {
+    uil.saveData(ACCESS_KEY);
+    // or to save to the acceptation server:
+    // uil.saveData(ACCESS_KEY, true);
+}
+);
+
+    </script>
+</html>
+```
