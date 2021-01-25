@@ -51,13 +51,14 @@ prime boiler plate :
         
 /* Create timeline */
 
-jsPsych.init({
-timeline: timeline,
-on_finish : function () {
-    uil.saveData(ACCESS_KEY);
-    // or to save to the acceptation server:
-    // uil.saveData(ACCESS_KEY, true);
-}
+jsPsych.init(
+    {
+        timeline: timeline,
+        on_finish : function () {
+            uil.saveData(ACCESS_KEY);
+            // or to save to the acceptation server:
+            // uil.saveData(ACCESS_KEY, true);
+    }
 );
 
     </script>
