@@ -1,6 +1,6 @@
 'use strict'
 /*
- * one line to give the program's name and an idea of what it does.
+ * (Psuedo-)Randomization functions for jsPsych
  * Copyright (C) 2020  Ty Mees, Utrecht University
  *
  * This program is free software; you can redistribute it and/or
@@ -20,17 +20,17 @@
 
 if (typeof uil === 'undefined')
     console.error("UiL Main library not loaded! " +
-        "Refusing to load randomisation functions");
+        "Refusing to load randomization functions");
 else
 {
-    if ('randomisation' in uil) {
+    if ('randomization' in uil) {
         console.warn(
-            "uil.randomisation already exists, this is unexpected, " +
+            "uil.randomization already exists, this is unexpected, " +
             "we'll overwrite it."
         );
     }
 
-    uil.randomisation = {};
+    uil.randomization = {};
 
     (function (context) {
 
@@ -135,5 +135,5 @@ else
 
             return order;
         }
-    })(uil.randomisation)
+    })(uil.randomization)
 }

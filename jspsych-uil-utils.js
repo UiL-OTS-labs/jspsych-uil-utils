@@ -44,10 +44,10 @@ var uil = {};
     const CONTENT_TYPE = 'Content-Type';
     const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
 
-    const LIBRARIES = ['jspsych-uil-randomisation.js']
+    const LIBRARIES = ['jspsych-uil-randomization.js']
     
     // The directory this script lives in
-    const SCRIPT_DIR = document.currentScript.baseURI.split('/').slice(0, -1).join('/');
+    const SCRIPT_DIR = document.currentScript.src.split('/').slice(0, -1).join('/');
 
 
     /* ************ private functions ************* */
