@@ -89,7 +89,7 @@ else
                 // In this case, the randomize algorithm has made previous
                 // choices which prohibit finishing.
                 if (attempts === (numItems * 2)) {
-                    return context.randomize(
+                    return context.randomizeStimuli(
                         original_stimuli,
                         max_same_type,
                         type_key,
