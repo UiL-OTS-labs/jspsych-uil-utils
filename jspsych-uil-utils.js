@@ -60,7 +60,7 @@ var uil = {};
 
     let _acc_server = false;
 
-    let _experiment_metadata = undefined;
+    let _datastore_metadata = undefined;
 
     /* ************ private functions ************* */
 
@@ -113,9 +113,9 @@ var uil = {};
      */
     function getExperimentMetadata(access_key, server) {
 
-        if (typeof(_experiment_metadata) !== "undefined")
+        if (typeof(_datastore_metadata) !== "undefined")
             // If we already have the data, return a auto-fulfilling promise
-            return new Promise((resolve, _) => {resolve(_experiment_metadata);});
+            return new Promise((resolve, _) => {resolve(_datastore_metadata);});
 
         let xhr = new XMLHttpRequest();
 
@@ -126,7 +126,7 @@ var uil = {};
 
             xhr.onload = function() {
                 if(xhr.status === 200){
-                    _experiment_metadata = xhr.response;
+                    _datastore_metadata = xhr.response;
                     resolve(xhr.response);
                 }
                 else {
