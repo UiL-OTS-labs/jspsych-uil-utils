@@ -41,7 +41,7 @@ var uil = {};
         'https://web-experiments.lab.hum.uu.nl/index_files/closed/';
 
     const DATA_UPLOAD_ENDPOINT = '/upload/';
-    const DATA_STATUS_ENDPOINT = '/status/';
+    const DATA_METADATA_ENDPOINT = '/metadata/';
 
     const POST = 'POST';
     const GET = 'GET';
@@ -121,7 +121,7 @@ var uil = {};
 
         // As this is an async call, we return a promise. That way we can actually easily do stuff with the result
         return new Promise((resolve, reject) => {
-            xhr.open(GET, server + access_key + DATA_STATUS_ENDPOINT);
+            xhr.open(GET, server + access_key + DATA_METADATA_ENDPOINT);
             xhr.responseType = "json";
 
             xhr.onload = function() {
