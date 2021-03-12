@@ -37,9 +37,14 @@ var uil = {};
     const DATA_STORE_ACCEPTATION_SERVER =
         'https://experiment-datastore.acc.lab.hum.uu.nl/api/';
 
-    const DATA_UPLOAD_DIR = '/upload/';
+    const CLOSED_EXPERIMENT_PAGE_LOCATION =
+        'https://web-experiments.lab.hum.uu.nl/index_files/closed/';
+
+    const DATA_UPLOAD_ENDPOINT = '/upload/';
+    const DATA_STATUS_ENDPOINT = '/status/';
 
     const POST = 'POST';
+    const GET = 'GET';
 
     const CONTENT_TYPE = 'Content-Type';
     const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
@@ -49,6 +54,13 @@ var uil = {};
     // The directory this script lives in
     const SCRIPT_DIR = document.currentScript.src.split('/').slice(0, -1).join('/');
 
+    /* ************ private variables ************* */
+
+    let _access_key = undefined;
+
+    let _acc_server = false;
+
+    let _experiment_metadata = undefined;
 
     /* ************ private functions ************* */
 
@@ -75,7 +87,7 @@ var uil = {};
     function saveOnDataServer(access_key, server, data) {
 
         var xhr = new XMLHttpRequest();
-        xhr.open(POST, server + access_key + DATA_UPLOAD_DIR);
+        xhr.open(POST, server + access_key + DATA_UPLOAD_ENDPOINT);
 
         // Don't change, server only accepts plain text
         xhr.setRequestHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_PLAIN); 
@@ -91,8 +103,130 @@ var uil = {};
         xhr.send(data);
     }
 
+    /**
+     * Loads experiment metadata from the Datastore status API
+     *
+     * @private
+     * @param {string} access_key The key obtain while registering the dataserver
+     * @param {string} server the server to which the data should be posted.
+     * @return {Promise}
+     */
+    function getExperimentMetadata(access_key, server) {
+
+        if (typeof(_experiment_metadata) !== "undefined")
+            // If we already have the data, return a auto-fulfilling promise
+            return new Promise((resolve, _) => {resolve(_experiment_metadata);});
+
+        let xhr = new XMLHttpRequest();
+
+        // As this is an async call, we return a promise. That way we can actually easily do stuff with the result
+        return new Promise((resolve, reject) => {
+            xhr.open(GET, server + access_key + DATA_STATUS_ENDPOINT);
+            xhr.responseType = "json";
+
+            xhr.onload = function() {
+                if(xhr.status === 200){
+                    _experiment_metadata = xhr.response;
+                    resolve(xhr.response);
+                }
+                else {
+                    console.error("Error while uploading status = " + xhr.status);
+                    console.error("Response = " + xhr.response);
+                    reject(xhr.response);
+                }
+            };
+            xhr.onerror = reject;
+            xhr.send();
+        })
+    }
+
 
     /* ************ public functions ************** */
+
+    /**
+     * Saves an access key to be used with all API related functions as an default.
+     *
+     * Saves an access key to be used with all API related functions as an default.
+     * If a default has been saved, one does not need to supply the access key anymore
+     * to any function with it as a parameter.
+     *
+     * @param {string} access_key, the key obtain from the datastore server.
+     */
+    context.setAccessKey = function (access_key) {
+        if (typeof(access_key) === "undefined") {
+            console.error("Function argument access_key is undefined.");
+            return;
+        }
+
+        _access_key = access_key.trim();
+    }
+
+    /**
+     * Instructs all API methods to use the acceptation datastore server.
+     *
+     * Instructs all API methods to use the acceptation datastore server. This can
+     * be overriden on a per-call method using the ``acc_server`` parameter;
+     */
+    context.useAcceptationServer = function () {
+        _acc_server = true;
+    }
+
+    /**
+     * This function will redirect the user away if the experiment is closed.
+     *
+     * This function will redirect the user to a 'experiment closed' page
+     * if the experiment is closed according to the datastore. In addition,
+     * if the experiment is in the 'piloting' stage, this function will
+     * warn the user of this fact.
+     *
+     * @param {string} access_key, the key obtain from the datastore server.
+     *                 Optional if key is set using setAccessKey
+     * @param {bool}   acc_server, true if the data should be stored at the
+     *                 "acceptation server" for testing purposes. This parameter
+     *                 is only usefull when running the experiment online
+     * @memberof uil
+     */
+    context.stopIfExperimentClosed = function(access_key = undefined, acc_server = undefined)
+    {
+        if (typeof(access_key) === "undefined") {
+            // Check if we have a pre-saved access key
+            if (typeof(_access_key) === "undefined") {
+                // If not, error and return
+                console.error("Function argument access_key is undefined.");
+                return;
+            }
+
+            // If we do, use that key
+            access_key = _access_key
+        }
+
+        if (typeof(acc_server) === "undefined") {
+            acc_server = _acc_server;
+        }
+
+        let is_online = isOnline(getProtocol());
+        let key = access_key.trim();
+
+        if (is_online) {
+            let server = "";
+            if (!acc_server)
+                server = DATA_STORE_PRODUCTION_SERVER;
+            else
+                server = DATA_STORE_ACCEPTATION_SERVER;
+
+            getExperimentMetadata(key, server).then(data => {
+                if (data['state'] === "Piloting") {
+                    alert(
+                        "Warning! This experiment is in the piloting stage. No data will " +
+                        "be saved, but the experiment is still accessible."
+                    );
+                }
+                else if (data['state'] !== "Open") {
+                    window.location = CLOSED_EXPERIMENT_PAGE_LOCATION;
+                }
+            });
+        }
+    }
 
     /**
      * Saves data to the uilots data server or displays the data.
@@ -103,17 +237,29 @@ var uil = {};
      * assumes that you are testing your experiment on your own pc via
      * the file protocol.
      *
-     * @param {string} access_key, the key obtain from the datastore server
+     * @param {string} access_key, the key obtain from the datastore server.
+     *                 Optional if key is set using setAccessKey
      * @param {bool}   acc_server, true if the data should be stored at the
      *                 "acceptation server" for testing purposes. This parameter
      *                 is only usefull when running the experiment online
      * @memberof uil
      */
-    context.saveData = function (access_key, acc_server=false) {
+    context.saveData = function (access_key, acc_server = undefined) {
 
-        if (typeof(access_key) === undefined) {
-            console.error("Function argument access_key is undefined.");
-            return;
+        if (typeof(access_key) === "undefined") {
+            // Check if we have a pre-saved access key
+            if (typeof(_access_key) === "undefined") {
+                // If not, error and return
+                console.error("Function argument access_key is undefined.");
+                return;
+            }
+
+            // If we do, use that key
+            access_key = _access_key
+        }
+
+        if (typeof(acc_server) === "undefined") {
+            acc_server = _acc_server;
         }
 
         let is_online = isOnline(getProtocol());
