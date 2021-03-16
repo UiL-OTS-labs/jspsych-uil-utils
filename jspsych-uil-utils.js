@@ -39,6 +39,8 @@ var uil = {};
 
     const CLOSED_EXPERIMENT_PAGE_LOCATION =
         'https://web-experiments.lab.hum.uu.nl/index_files/closed/';
+    const CRITICAL_ERROR_PAGE_LOCATION = 
+        'https://web-experiments.lab.hum.uu.nl/index_files/error/';
 
     const DATA_UPLOAD_ENDPOINT = '/upload/';
     const DATA_METADATA_ENDPOINT = '/metadata/';
@@ -111,7 +113,7 @@ var uil = {};
      * @param {string} server the server to which the data should be posted.
      * @return {Promise}
      */
-    function getExperimentMetadata(access_key, server) {
+    function getDatastoreMetadata(access_key, server) {
 
         if (typeof(_datastore_metadata) !== "undefined")
             // If we already have the data, return a auto-fulfilling promise
@@ -119,9 +121,11 @@ var uil = {};
 
         let xhr = new XMLHttpRequest();
 
-        // As this is an async call, we return a promise. That way we can actually easily do stuff with the result
+        // As this is an async call, we return a promise. That way we can
+        // actually easily do stuff with the result.
         return new Promise((resolve, reject) => {
-            xhr.open(GET, server + access_key + DATA_METADATA_ENDPOINT);
+            let url = server + access_key + DATA_METADATA_ENDPOINT;
+            xhr.open(GET, url);
             xhr.responseType = "json";
 
             xhr.onload = function() {
@@ -132,10 +136,16 @@ var uil = {};
                 else {
                     console.error("Error while uploading status = " + xhr.status);
                     console.error("Response = " + xhr.response);
-                    reject(xhr.response);
+                    reject(new Error(String(xhr.status) + ": " + String(xhr.response)));
                 }
             };
-            xhr.onerror = reject;
+
+            function onerror() {
+                reject(new Error("UiL-OTS datastore server is unavailable"));
+            }
+            
+            xhr.onerror = onerror;
+
             xhr.send();
         })
     }
@@ -184,9 +194,17 @@ var uil = {};
      * @param {bool}   acc_server, true if the data should be stored at the
      *                 "acceptation server" for testing purposes. This parameter
      *                 is only usefull when running the experiment online
+     * @param {string} A page to land when the experiment is closed
+     * @param {string} A page to land when the communication with the datastore
+     *                 fails. 
      * @memberof uil
      */
-    context.stopIfExperimentClosed = function(access_key = undefined, acc_server = undefined)
+    context.stopIfExperimentClosed = function(
+        access_key = undefined,
+        acc_server = undefined,
+        stop_page = CLOSED_EXPERIMENT_PAGE_LOCATION,
+        error_page = CRITICAL_ERROR_PAGE_LOCATION
+    )
     {
         if (typeof(access_key) === "undefined") {
             // Check if we have a pre-saved access key
@@ -214,7 +232,7 @@ var uil = {};
             else
                 server = DATA_STORE_ACCEPTATION_SERVER;
 
-            getExperimentMetadata(key, server).then(data => {
+            let getDatastoreMetadataResolve = function(data) {
                 if (data['state'] === "Piloting") {
                     alert(
                         "Warning! This experiment is in the piloting stage. No data will " +
@@ -222,9 +240,17 @@ var uil = {};
                     );
                 }
                 else if (data['state'] !== "Open") {
-                    window.location = CLOSED_EXPERIMENT_PAGE_LOCATION;
+                    window.location = stop_page;
                 }
-            });
+            }
+            let getDatastoreMetadataReject = function (error) {
+                window.location = error_page;
+            }
+
+            getDatastoreMetadata(key, server).then(
+                getDatastoreMetadataResolve,
+                getDatastoreMetadataReject
+            );
         }
     }
 
