@@ -74,7 +74,12 @@ else
 
         /**
          * Returns information about the resolution of the monitor the browser
-         * window currently inhabits. Returns:
+         * window currently inhabits. Please note that these values aren't
+         * constant, as participants can resize or move the browser window at
+         * will. It's advised to retrieve this data repeatedly in every trial
+         * where resolution can be a relevant factor.
+         *
+         * Returns:
          *
          * actualWidth/actualHeight:
          * The actual resolution of the monitor. This will always be the entire
