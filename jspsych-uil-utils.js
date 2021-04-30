@@ -53,8 +53,11 @@ var uil = {};
 
     const LIBRARIES = [
         'jspsych-uil-randomization.js',
-        'libs/ua-parser.min.js', // Dependency of uil-browser
         'jspsych-uil-browser.js',
+    ];
+
+    const PRIVATE_LIBRARIES = [
+        'libs/ua-parser.min.js', // Dependency of uil-browser
     ];
     
     // The directory this script lives in
@@ -364,6 +367,7 @@ var uil = {};
     }
 
     function loadAllLibraries() {
+        PRIVATE_LIBRARIES.forEach(library => context.loadLibrary(library))
         LIBRARIES.forEach(library => context.loadLibrary(library))
     }
 
