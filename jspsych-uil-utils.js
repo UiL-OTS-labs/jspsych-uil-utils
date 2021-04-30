@@ -82,7 +82,7 @@ var uil = {};
     }
 
     function isOnline(protocol) {
-        return protocol === "http:" || protocol === "https:"
+        return protocol === "http:" || protocol === "https:";
     }
 
     /**
@@ -222,7 +222,7 @@ var uil = {};
             }
 
             // If we do, use that key
-            access_key = _access_key
+            access_key = _access_key;
         }
 
         if (typeof(acc_server) === "undefined") {
@@ -288,7 +288,7 @@ var uil = {};
             }
 
             // If we do, use that key
-            access_key = _access_key
+            access_key = _access_key;
         }
 
         if (typeof(acc_server) === "undefined") {
@@ -363,15 +363,15 @@ var uil = {};
         // Set an ID. Used in libraries to wait till a dependency has loaded
         script.id = library;
 
-        document.head.appendChild(script)
+        document.head.appendChild(script);
     }
 
     function loadAllLibraries() {
-        PRIVATE_LIBRARIES.forEach(library => context.loadLibrary(library))
-        LIBRARIES.forEach(library => context.loadLibrary(library))
+        PRIVATE_LIBRARIES.forEach(library => context.loadLibrary(library));
+        LIBRARIES.forEach(library => context.loadLibrary(library));
     }
 
     // Load in all libraries
-    loadAllLibraries()
+    loadAllLibraries();
 
 })(uil);
