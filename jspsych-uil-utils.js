@@ -321,6 +321,7 @@ var uil = {};
      * @returns {boolean}
      */
     context.isMobile = function () {
+        console.warn("uil.isMobile is deprecated. Use uil.browser.isMobile instead");
         return context.browser.isMobile();
     };
 
@@ -330,6 +331,7 @@ var uil = {};
      * @returns {boolean}
      */
     context.isMobileOrTablet = function () {
+        console.warn("uil.isMobileOrTablet is deprecated. Use uil.browser.isMobileOrTablet instead");
         return context.browser.isMobileOrTablet();
     };
 
@@ -348,6 +350,7 @@ var uil = {};
      * @returns {boolean} True if the browser has a touch screen
      */
     context.isTouchCapable = function () {
+        console.warn("uil.isTouchCapable is deprecated. Use uil.browser.isTouchCapable instead");
         return context.browser.isTouchCapable();
     }
 
