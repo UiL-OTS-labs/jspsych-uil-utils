@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- include jsPsych first -->
+    <script src="https://web-experiments.lab.hum.uu.nl/jspsych/6.1.0/jspsych.js"></script>
+    <script src="https://web-experiments.lab.hum.uu.nl/jspsych/6.1.0/plugins/jspsych-html-button-response.js"></script>
+    <script src="jspsych-uil-utils.js" type="text/javascript"></script>
+</head>
+<body>
+<script>
+    function testUtils() {
+
+        let start_screen = {
+            type: 'html-button-response',
+            stimulus: "This is an example on how to add browser info. Please press OK.",
+            choices: ["OK"],
+            response_ends_trial: true,
+            data: {
+                resolution: uil.browser.getResolutionInfo(),
+            }
+        };
+
+        let end_screen = {
+            type: 'html-button-response',
+            stimulus: "Press the ok button to continue",
+            choices: ["OK"],
+            response_ends_trial: true,
+            // BrowserInfo might not be available on the first trial, so we add it on the last.
+            data: {
+                browser: uil.browser.getBrowserInfo(),
+                resolution: uil.browser.getResolutionInfo(),
+            }
+        };
+
+        jsPsych.init(
+            {
+                timeline:[start_screen, end_screen],
+                on_finish : function() {
+                    jsPsych.data.displayData()
+                }
+            }
+        )
+    }
+
+    window.addEventListener (
+        'load',
+        testUtils
+    );
+</script>
+</body>
+</html>
