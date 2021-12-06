@@ -73,6 +73,10 @@ var uil = {};
 
     /* ************ private functions ************* */
 
+    function getHostname() {
+        return window.location.hostname;
+    }
+
     function getProtocol() {
         return window.location.protocol;
     }
@@ -81,8 +85,10 @@ var uil = {};
         return protocol === "file:";
     }
 
-    function isOnline(protocol) {
-        return protocol === "http:" || protocol === "https:";
+    function isOnline(protocol, hostname) {
+        let prot_online = protocol === "http:" || protocol === "https:";
+        let host_online = hostname !== "localhost" ;
+        return prot_online && host_online;
     }
 
     /**
@@ -229,7 +235,7 @@ var uil = {};
             acc_server = _acc_server;
         }
 
-        let is_online = isOnline(getProtocol());
+        let is_online = isOnline(getProtocol(), getHostname());
         let key = access_key.trim();
 
         if (is_online) {
@@ -295,7 +301,7 @@ var uil = {};
             acc_server = _acc_server;
         }
 
-        let is_online = isOnline(getProtocol());
+        let is_online = isOnline(getProtocol(), getHostname());
         let data = jsPsych.data.get().json();
         let key = access_key.trim();
         
