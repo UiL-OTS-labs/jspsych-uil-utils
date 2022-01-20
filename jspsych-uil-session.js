@@ -7,7 +7,7 @@ else
 {
     if ('session' in uil) {
         console.warn(
-            "uil.browser already exists, this is unexpected, " +
+            "uil.session already exists, this is unexpected, " +
                 "we'll overwrite it."
         );
     }
@@ -16,7 +16,7 @@ else
 
     (function (context) {
         class API {
-            constructor(host, access_key) {
+            constructor(host) {
                 this.host = host;
                 this.headers = {};
             }
