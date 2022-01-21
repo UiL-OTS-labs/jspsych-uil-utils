@@ -284,7 +284,7 @@ var uil = {};
      *                 is only usefull when running the experiment online
      * @memberof uil
      */
-    context.saveData = function (access_key, acc_server = undefined, save_handler = undefined) {
+    context.saveData = function (access_key, acc_server = undefined) {
 
         if (typeof(access_key) === "undefined") {
             // Check if we have a pre-saved access key
@@ -304,10 +304,12 @@ var uil = {};
         let server = context.resolveServer(acc_server);
 
         if (is_online) {
-            if (!save_handler) {
-                save_handler = saveOnDataServer;
+            if (uil.session.isActive()) {
+                uil.session.upload(key, data);
             }
-            save_handler(key, server, data);
+            else {
+                saveOnDataServer(key, server, data);
+            }
         }
         else {
             jsPsych.data.displayData();

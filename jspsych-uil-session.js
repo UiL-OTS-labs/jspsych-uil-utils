@@ -35,19 +35,19 @@ else
                 });
             }
 
-            get(url) {
+            _get(url) {
                 return this._request(url, 'GET');
             }
-            post(url, data) {
+            _post(url, data) {
                 return this._request(url, 'POST', data);
             }
 
             sessionStart(access_key) {
-                return this.post(`${access_key}/participant/`);
+                return this._post(`${access_key}/participant/`);
             }
 
             sessionUpload(access_key, session_id, data) {
-                return this.post(`${access_key}/upload/${session_id}/`, data);
+                return this._post(`${access_key}/upload/${session_id}/`, data);
             }
         }
 
@@ -65,7 +65,7 @@ else
             });
         };
 
-        context.upload = function(access_key, server, data) {
+        context.upload = function(access_key, data) {
             if (session_id === null) {
                 throw new Error('No active session!');
             }
