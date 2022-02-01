@@ -54,12 +54,13 @@ var uil = {};
     const LIBRARIES = [
         'jspsych-uil-randomization.js',
         'jspsych-uil-browser.js',
+        'jspsych-uil-session.js',
     ];
 
     const PRIVATE_LIBRARIES = [
         'libs/ua-parser.min.js', // Dependency of uil-browser
     ];
-    
+
     // The directory this script lives in
     const SCRIPT_DIR = document.currentScript.src.split('/').slice(0, -1).join('/');
 
@@ -297,26 +298,36 @@ var uil = {};
             access_key = _access_key;
         }
 
-        if (typeof(acc_server) === "undefined") {
-            acc_server = _acc_server;
-        }
-
-        let is_online = isOnline(getProtocol(), getHostname());
         let data = jsPsych.data.get().json();
         let key = access_key.trim();
-        
-        if (is_online) {
-            let server = "";
-            if (!acc_server) 
-                server = DATA_STORE_PRODUCTION_SERVER;
-            else
-                server = DATA_STORE_ACCEPTATION_SERVER;
+        let is_online = isOnline(getProtocol(), getHostname());
+        let server = context.resolveServer(acc_server);
 
-            saveOnDataServer(key, server, data);
+        if (is_online) {
+            if (uil.session.isActive()) {
+                uil.session.upload(key, data);
+            }
+            else {
+                saveOnDataServer(key, server, data);
+            }
         }
         else {
             jsPsych.data.displayData();
         }
+    }
+
+    /**
+     * Figures out which server we should be talking to
+     */
+    context.resolveServer = function(acc_server = undefined) {
+        if (typeof(acc_server) === "undefined") {
+            acc_server = _acc_server;
+        }
+
+        if (!acc_server)
+            return DATA_STORE_PRODUCTION_SERVER;
+        else
+            return DATA_STORE_ACCEPTATION_SERVER;
     }
 
     /**
