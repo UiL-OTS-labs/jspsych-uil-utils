@@ -152,7 +152,7 @@ else
          *
          * @returns the subject_id from the data store.
          */
-        context.subject_id = function() {
+        context.subjectId = function() {
             if (session_id === null) {
                 throw new Error('No active session')
             }
