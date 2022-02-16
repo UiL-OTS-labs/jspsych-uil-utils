@@ -104,6 +104,8 @@ else
         }
 
         var session_id = null;
+        var subject_id = null;
+
         var api = new API(uil.resolveServer());
 
         /**
@@ -127,6 +129,7 @@ else
         context.start = function(access_key, callback) {
             api.sessionStart(access_key).then((data) => {
                 session_id = data.uuid;
+                subject_id = data.subject_id;
                 callback(data.group_name);
             });
         };
@@ -143,5 +146,18 @@ else
 
             api.sessionUpload(access_key, session_id, data);
         };
+
+        /**
+         * Obtain an subject_id from the the dataserver
+         *
+         * @returns the subject_id from the data store.
+         */
+        context.subjectId = function() {
+            if (session_id === null) {
+                throw new Error('No active session')
+            }
+
+            return subject_id;
+        }
     })(uil.session);
 }
