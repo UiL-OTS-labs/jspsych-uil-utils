@@ -65,11 +65,17 @@ else
                 );
             }
 
+            // Select the relevant items, if max tells only 3 items are
+            // allowed in a row, it only makes sense to look at those
             let selection = randomized.slice(-max);
+            // Push the item that we want to append to the selection
             selection.push(item);
 
             let count = 0;
             selection.forEach(stimulus => count += stimulus[key] === value);
+
+            // max items are allowed in a row, hence we should test whether
+            // the count is more than max. If so reject the new item.
             if (count > max)
                 return false;
         }
