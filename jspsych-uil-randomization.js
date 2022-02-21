@@ -107,7 +107,7 @@ else
         }
 
         if (nth_try >= max_tries) {
-            console.log(
+            console.error(
                 "Unable to randomize according the constraints, "       +
                 "Perhaps it is a good idea to make the constraints "    +
                 "less strict."
