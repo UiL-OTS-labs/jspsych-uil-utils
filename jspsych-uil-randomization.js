@@ -32,6 +32,11 @@ else
 
     uil.randomization = {};
 
+    const NOT_SHUFFLED_ERROR_MSG =
+        "Unable to shuffle according to the constraints, " +
+        "perhaps it is an idea to loosen the constraints.";
+
+
     /**
      * Swaps two items in an array
      * @param stimuli {Array.<object>}
@@ -141,16 +146,13 @@ else
     }
 
     /**
-     * Randomize the input stimuli, according to the given constraints.
-     *
-     * A new list of stimuli will be returned if reasonably possible.
-     * The constraints are an object with a key that must also be present in
-     * the original stimuli. The value of the belonging to the key, denotes
-     * how many items with item[key] may have the same value in a row.
+     * Private randomization function see
+     * uil.randomization.randomizeStimuliConstraints() for elaborate details
      *
      * @param original_stimuli {array.<object>} The unrandomized stimuli
      * @param constraints {object} The constraints to determine
      * how many items with the same value may be appended in a row.
+     * @param nth_try {number} The nth attempt to randomize the stimuli [0, max_tries)
      * @param max_tries {number} The total number of attempts to randomize the stimuli.
      *
      * @returns {null|[]} The randomized order. Null if randomization
@@ -159,27 +161,48 @@ else
     function randomizePrivate(
         original_stimuli,
         constraints,
+        nth_try,
         max_tries
     ) {
         if (max_tries < 1) {
             throw new RangeError("max_tries is < 1");
         }
+        if (nth_try < 0) {
+            throw new RangeError("nth_try is < 0");
+        }
 
-        let output = null;
-        // Randomize stimuli and try to see if we can fix the order,
-        // We break out of the loop after max_tries or a valid input
-        // has been found.
-        for (let i = 0; i < max_tries && output === null; i++) {
-            let copy = uil.randomization.randomShuffle(original_stimuli);
-            output = fixOrderForConstraints(copy, constraints);
+        if (nth_try >= max_tries) {
+            console.error(NOT_SHUFFLED_ERROR_MSG);
+            return null;
         }
-        if (output === null) {
-            console.error(
-                "Unable to shuffle according to the constraints, " +
-                "perhaps it is an idea to loosen the constraints."
-            );
+
+        let stimuli = Array.from(original_stimuli);
+        let order = [];
+        let item_attempts = 0; // Number of attempts to find a fitting stimulus
+
+        // Pick a random fitting input stimulus and append it to the output
+        // until no stimuli are left.
+        while (stimuli.length > 0) {
+            if (item_attempts === stimuli.length * 2) {
+                return randomizePrivate(
+                    original_stimuli,
+                    constraints,
+                    nth_try + 1,
+                    max_tries
+                );
+            }
+            let rand_index = Math.floor(Math.random() * stimuli.length);
+            let item = stimuli[rand_index];
+            if (allowPushItem(order, constraints, item)) {
+                order.push(item);                         // push fitting item to output
+                stimuli.splice(rand_index, 1); // and remove it from the input
+                item_attempts = 0;
+            }
+            else {
+                item_attempts += 1;
+            }
         }
-        return output;
+        return order;
     }
 
     (function (context) {
@@ -213,15 +236,31 @@ else
             type_key = 'item_type'
         ) {
             let constraints = {[type_key] : max_same_type}; // ES6 dependency.
-            return randomizePrivate(original_stimuli, constraints, 10);
+            return randomizePrivate(original_stimuli, constraints, 0, 10);
         }
 
+        /**
+         * Randomize the input stimuli, according to the given constraints.
+         *
+         * A new list of stimuli will be returned if reasonably possible.
+         * The constraints are an object with a key that must also be present in
+         * the original stimuli. The value of the belonging to the key, denotes
+         * how many items with item[key] may have the same value in a row.
+         *
+         * @param original_stimuli {array.<object>} The unrandomized stimuli
+         * @param constraints {object} The constraints to determine
+         * how many items with the same value may be appended in a row.
+         * @param max_tries {number} The total number of attempts to randomize the stimuli.
+         *
+         * @returns {null|[]} The randomized order. Null if randomization
+         * failed, in which case an error will have been logged to the console
+         */
         context.randomizeStimuliConstraints = function (
             original_stimuli,
             constraints = {'item_type' : 2},
             max_tries = 10
         ) {
-            return randomizePrivate(original_stimuli, constraints, max_tries);
+            return randomizePrivate(original_stimuli, constraints, 0, max_tries);
         }
 
         /**
@@ -229,7 +268,7 @@ else
          *
          * @param original_stimuli {Array}
          *
-         * @return {Array} A shuffle version of the input.
+         * @return {Array} A shuffled version of the input.
          */
         context.randomShuffle = function(original_stimuli) {
             let copy = Array.from(original_stimuli);
@@ -240,6 +279,49 @@ else
                 swapItems(copy, i, swap_index);
             }
             return copy;
+        }
+
+        /**
+         * Randomizes the stimuli.
+         *
+         * This function also randomizes the stimuli. This function
+         * may give a little bit more luck when your constraints are
+         * very strict or when there is an imbalance in the input.
+         * An imbalance occurs when your stimuli are:
+         * [{a:1},{a:1},{a:2},....{a:1},{a:1},{a:2}]
+         * There are twice as many ones in the stimuli compared to two's.
+         *
+         * This function might be more expensive compared to:
+         * uil.randomization.randomizeStimuli(Constraints).
+         *
+         * @param original_stimuli {Array.<Object>}
+         * @param constraints {Object} The object that defines the constraints
+         * @param max_tries {number} A number larger or equal to 1.
+         *
+         * @return {null|Array.<Object>}
+         */
+        context.randomShuffleConstraints = function(
+            original_stimuli,
+            constraints= {},
+            max_tries= 10
+        ) {
+            if (max_tries < 1) {
+                throw new RangeError("max_tries is < 1");
+            }
+
+            let output = null;
+            // Randomize stimuli and try to see if we can fix the order,
+            // We break out of the loop after max_tries or a valid input
+            // has been found.
+            for (let i = 0; i < max_tries && output === null; i++) {
+                let copy = uil.randomization.randomShuffle(original_stimuli);
+                output = fixOrderForConstraints(copy, constraints);
+            }
+            if (output === null) {
+                console.error(NOT_SHUFFLED_ERROR_MSG);
+            }
+            return output;
+
         }
 
         /**

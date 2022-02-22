@@ -147,6 +147,85 @@
         console.log("testRandomizationConstraints Success!");
     }
 
+    function testRandomizationBenchmarks()
+    {
+        let constraints = {item_type : 3};
+        const niters = 100;
+
+        function benchmarkFunction(N, func, funcname, constraints, output) {
+            [10, 100, 1000, 10000].forEach((num_stim) =>{
+                output.function = funcname;
+                output.constraints = constraints;
+                let stims = createStimuli(num_stim);
+                tstart = performance.now();
+                for (let i = 0; i < N; i++) {
+                    let shuffled = func(stims, constraints);
+                }
+                tend = performance.now();
+                output[`${num_stim} items shuffle time`] =
+                    String((tend - tstart) / N) + " ms";
+            });
+        }
+
+        let output = {};
+        benchmarkFunction(
+            niters,
+            uil.randomization.randomShuffle,
+            "randomShuffle",
+            constraints,
+            output
+        );
+        console.log(output);
+
+        output = {};
+        benchmarkFunction(
+            niters,
+            uil.randomization.randomizeStimuliConstraints,
+            "randomizeStimululiConstraints",
+            constraints,
+            output
+        );
+        console.log(output);
+
+        output = {};
+        benchmarkFunction(
+            niters,
+            uil.randomization.randomShuffleConstraints,
+            "randomShuffleConstraints",
+            constraints,
+            output
+        );
+        console.log(output);
+
+
+        // With some stricter constraints
+        constraints = {
+            item_type : 2,
+            color : 2,
+        };
+
+        output = {};
+        benchmarkFunction(
+            niters,
+            uil.randomization.randomizeStimuliConstraints,
+            "randomizeStimululiConstraints",
+            constraints,
+            output
+        );
+        console.log(output);
+
+        output = {};
+        benchmarkFunction(
+            niters,
+            uil.randomization.randomShuffleConstraints,
+            "randomShuffleConstraints",
+            constraints,
+            output
+        );
+        console.log(output);
+
+    }
+
     function testRandomizationConstraintsHard() {
         let stimuli = createStimuli(100);
         let constraints = {
@@ -155,8 +234,6 @@
             color : 2
         };
 
-        // console.assert(uil.randomization.stimuliMeetConstraints(stimuli, constraints));
-
         /*
          * there must be a sequence true, true, false, ...., true, true, false out there
          * that is not the input and meets the constraints, it's just unlikely that it
@@ -164,7 +241,7 @@
          * The problem that occurs eventually is that the rules need to have a false, while
          * there are only true values remaining.
          */
-        let shuffled = uil.randomization.randomizeStimuliConstraints (
+        let shuffled = uil.randomization.randomShuffleConstraints (
             stimuli, constraints, 100
         );
         console.assert(shuffled !== null);
@@ -180,6 +257,7 @@
         testRandomization();
         testRandomizationConstraints();
         testRandomizationConstraintsHard();
+        testRandomizationBenchmarks();
     }
 
     window.addEventListener (
