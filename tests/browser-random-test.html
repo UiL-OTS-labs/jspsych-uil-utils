@@ -71,7 +71,8 @@
             {a : 1},
             {a : 1},
             {a : 1},
-        ]
+        ];
+
         console.assert(
             uil.randomization.stimuliMeetConstraints(
                 impropper, {a : 1}
@@ -133,7 +134,7 @@
             uil.randomization.stimuliMeetConstraints(shuffled, constraints)
         );
 
-        constraints = {item_type: 3, color: 3, bi_state:10};
+        constraints = {item_type: 2, color: 2, bi_state:10};
         shuffled = uil.randomization.randomizeStimuliConstraints(
             stimuli,
             constraints
@@ -147,10 +148,14 @@
     }
 
     function testRandomizationConstraintsHard() {
-        let stimuli = createStimuli(1000);
-        let constraints = {bi_state : 2};
+        let stimuli = createStimuli(100);
+        let constraints = {
+            bi_state : 2,
+            item_type : 2,
+            color : 2
+        };
 
-        console.assert(uil.randomization.stimuliMeetConstraints(stimuli, constraints));
+        // console.assert(uil.randomization.stimuliMeetConstraints(stimuli, constraints));
 
         /*
          * there must be a sequence true, true, false, ...., true, true, false out there
@@ -159,7 +164,9 @@
          * The problem that occurs eventually is that the rules need to have a false, while
          * there are only true values remaining.
          */
-        let shuffled = uil.randomization.randomizeStimuliConstraints(stimuli, constraints, 100);
+        let shuffled = uil.randomization.randomizeStimuliConstraints (
+            stimuli, constraints, 100
+        );
         console.assert(shuffled !== null);
         console.assert(shuffled !== stimuli);
         if (shuffled !== null) {
