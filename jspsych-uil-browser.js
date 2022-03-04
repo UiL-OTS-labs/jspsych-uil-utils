@@ -34,6 +34,9 @@ else
 
     (function (context) {
 
+        const MOBILE_ERROR_PAGE_LOCATION =
+              'https://web-experiments.lab.hum.uu.nl/index_files/mobile/';
+
         let _UA_parser = undefined;
 
         // Wait till we are sure our supporting library is loaded
@@ -303,7 +306,16 @@ else
             }
 
             return has_touchscreen
+        };
+
+        function _reject(predicate, location) {
+            if (predicate()) {
+                window.location = location;
+            }
         }
+
+        context.rejectMobile = () => _reject(context.isMobile, MOBILE_ERROR_PAGE_LOCATION);
+        context.rejectMobileOrTablet = () => _reject(context.isMobileOrTablet, MOBILE_ERROR_PAGE_LOCATION);
 
     })(uil.browser)
 }
