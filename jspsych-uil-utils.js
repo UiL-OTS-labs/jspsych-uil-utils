@@ -88,7 +88,7 @@ var uil = {};
 
     function isOnline(protocol, hostname) {
         let prot_online = protocol === "http:" || protocol === "https:";
-        let host_online = hostname !== "localhost" ;
+        let host_online = hostname !== "localhost" && hostname !== "127.0.0.1" ;
         return prot_online && host_online;
     }
 
