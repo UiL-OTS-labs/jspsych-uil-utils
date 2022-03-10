@@ -199,9 +199,7 @@ var uil = {};
      * This function will redirect the user away if the experiment is closed.
      *
      * This function will redirect the user to a 'experiment closed' page
-     * if the experiment is closed according to the datastore. In addition,
-     * if the experiment is in the 'piloting' stage, this function will
-     * warn the user of this fact.
+     * if the experiment is closed according to the datastore.
      *
      * @param {string} access_key, the key obtain from the datastore server.
      *                 Optional if key is set using setAccessKey
@@ -247,13 +245,8 @@ var uil = {};
                 server = DATA_STORE_ACCEPTATION_SERVER;
 
             let getDatastoreMetadataResolve = function(data) {
-                if (data['state'] === "Piloting") {
-                    alert(
-                        "Warning! This experiment is in the piloting stage. No data will " +
-                        "be saved, but the experiment is still accessible."
-                    );
-                }
-                else if (data['state'] !== "Open") {
+                let state = data['state'];
+                if (state !== "Open" && state !== "Piloting") {
                     window.location = stop_page;
                 }
             }
