@@ -52,6 +52,7 @@ var uil = {};
     const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
 
     const LIBRARIES = [
+        'jspsych-uil-error.js',
         'jspsych-uil-randomization.js',
         'jspsych-uil-browser.js',
         'jspsych-uil-session.js',
@@ -378,6 +379,8 @@ var uil = {};
 
         document.head.appendChild(script);
     }
+
+    context.isOnline = isOnline;
 
     function loadAllLibraries() {
         PRIVATE_LIBRARIES.forEach(library => context.loadLibrary(library));
