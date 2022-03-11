@@ -12,36 +12,53 @@ else {
 
     uil.error = {};
 
+    const ERR_DIALOG_ID = 'uil_error_dialog';
+
+    function redirect(message) {
+        let encoded = btoa(message);
+        window.location.href = 'https://web-experiments.lab.hum.uu.nl/index_files/error/?msg=' + encoded;
+    }
+
+    function createErrorDialog() {
+        let dialog = document.getElementById(ERR_DIALOG_ID);
+        if (dialog) {
+            return dialog;
+        }
+
+        let bg = document.createElement('div');
+        bg.style.position = 'fixed';
+        bg.style.top = '0';
+        bg.style.width = '100%';
+        bg.style.height = '100vh';
+        bg.style.background = 'rgba(0, 0, 0, 0.2)';
+
+        dialog = document.createElement('div');
+        dialog.id = ERR_DIALOG_ID;
+        dialog.style.background = '#fff';
+        dialog.style.color = '#333';
+        dialog.style.border = '1px solid #d90000';
+        dialog.style.margin = '30vh auto 0 auto';
+        dialog.style.textAlign = 'center';
+        dialog.style.width = '50%';
+        dialog.style.padding = '15px';
+
+        let heading = document.createElement('h2');
+        heading.innerText = 'Error';
+        dialog.prepend(heading);
+
+        bg.append(dialog);
+        document.body.append(bg);
+        return dialog;
+    }
+
     (function (context) {
-        context.redirect = function(message) {
-            let encoded = btoa(message);
-            window.location.href = 'https://web-experiments.lab.hum.uu.nl/index_files/error/?msg=' + encoded;
-        };
 
         context.alert = function(message) {
-            let bg = document.createElement('div');
-            bg.style.position = 'fixed';
-            bg.style.top = '0';
-            bg.style.width = '100%';
-            bg.style.height = '100vh';
-            bg.style.background = 'rgba(0, 0, 0, 0.2)';
-
-            let dialog = document.createElement('div');
-            dialog.style.background = '#fff';
-            dialog.style.color = '#333';
-            dialog.style.border = '1px solid #d90000';
-            dialog.style.margin = '30vh auto 0 auto';
-            dialog.style.textAlign = 'center';
-            dialog.style.width = '50%';
-            dialog.style.paddingBottom = '15px';
-
-            let heading = document.createElement('h2');
-            heading.innerText = 'Error';
-            dialog.innerHTML = message;
-            dialog.prepend(heading);
-
-            bg.append(dialog);
-            document.body.append(bg);
+            let dialog = createErrorDialog();
+            let p = document.createElement('p');
+            p.innerHTML = message;
+            p.style.textAlign = 'left';
+            dialog.append(p);
         };
 
         context.registerHandler = function() {
