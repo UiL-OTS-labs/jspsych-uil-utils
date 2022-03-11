@@ -6,8 +6,8 @@ if (typeof uil === 'undefined') {
 }
 else {
     if ('error' in uil) {
-        console.warng("uil.error already exists, this is unexpected, " +
-                      "we'll overwrite it.");
+        console.warn("uil.error already exists, this is unexpected, " +
+                     "we'll overwrite it.");
     }
 
     uil.error = {};
