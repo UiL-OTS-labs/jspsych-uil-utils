@@ -20,11 +20,6 @@ else {
     }
 
     function createErrorDialog() {
-        let dialog = document.getElementById(ERR_DIALOG_ID);
-        if (dialog) {
-            return dialog;
-        }
-
         let bg = document.createElement('div');
         bg.style.position = 'fixed';
         bg.style.top = '0';
@@ -32,7 +27,7 @@ else {
         bg.style.height = '100vh';
         bg.style.background = 'rgba(0, 0, 0, 0.2)';
 
-        dialog = document.createElement('div');
+        let dialog = document.createElement('div');
         dialog.id = ERR_DIALOG_ID;
         dialog.style.background = '#fff';
         dialog.style.color = '#333';
@@ -47,38 +42,53 @@ else {
         dialog.prepend(heading);
 
         bg.append(dialog);
-        document.body.append(bg);
+        if (document.body === null) {
+            window.addEventListener('load', () => document.body.append(bg));
+        }
+        else {
+            document.body.append(bg);
+        }
         return dialog;
     }
 
+    function registerHandler() {
+        let handler = context.alert;
+        if (uil.isOnline()) {
+            handler = redirect;
+        }
+
+        window.addEventListener('error',  (event) => {
+            let message = event.message;
+            let path = event.filename.split('/');
+            let source = path[path.length-1];
+            handler(message, source, event.lineno);
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+            handler(e.reason.message);
+        });
+    };
+
+    let _dialog = null;
+
     (function (context) {
 
-        context.alert = function(message) {
-            let dialog = createErrorDialog();
+        context.alert = function(message, source, line) {
+            let dialog = _dialog;
+            if (_dialog === null) {
+                _dialog = createErrorDialog();
+                dialog = _dialog;
+            }
+
             let p = document.createElement('p');
+            if (typeof source !== 'undefined' && typeof line !== 'undefined') {
+                message = `${message} <small>(${source}:${line})</small>`;
+            }
             p.innerHTML = message;
             p.style.textAlign = 'left';
             dialog.append(p);
         };
 
-        context.registerHandler = function() {
-            let handler = context.alert;
-            if (uil.isOnline()) {
-                handler = context.redirect;
-            }
-
-            window.addEventListener('error',  (msgOrEvent, source, line, col, err) => {
-                let message = msgOrEvent;
-                if (typeof msgOrEvent.message !== 'undefined') {
-                    message = msgOrEvent.message;
-                }
-                handler(message);
-            });
-            window.addEventListener('unhandledrejection', function (e) {
-                handler(e.reason.message);
-            });
-        };
     })(uil.error);
 
-    uil.error.registerHandler();
+    registerHandler();
 }
