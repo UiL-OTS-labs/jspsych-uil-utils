@@ -51,23 +51,6 @@ else {
         return dialog;
     }
 
-    function registerHandler() {
-        let handler = context.alert;
-        if (uil.isOnline()) {
-            handler = redirect;
-        }
-
-        window.addEventListener('error',  (event) => {
-            let message = event.message;
-            let path = event.filename.split('/');
-            let source = path[path.length-1];
-            handler(message, source, event.lineno);
-        });
-        window.addEventListener('unhandledrejection', function (e) {
-            handler(e.reason.message);
-        });
-    };
-
     let _dialog = null;
 
     (function (context) {
@@ -88,7 +71,24 @@ else {
             dialog.append(p);
         };
 
-    })(uil.error);
+        function registerHandler() {
+            let handler = context.alert;
+            if (uil.isOnline()) {
+                handler = redirect;
+            }
 
-    registerHandler();
+            window.addEventListener('error',  (event) => {
+                let message = event.message;
+                let path = event.filename.split('/');
+                let source = path[path.length-1];
+                handler(message, source, event.lineno);
+            });
+            window.addEventListener('unhandledrejection', function (e) {
+                handler(e.reason.message);
+            });
+        };
+
+        registerHandler();
+
+    })(uil.error);
 }
