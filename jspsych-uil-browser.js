@@ -39,13 +39,18 @@ else
 
         let _UA_parser = undefined;
 
-        // Wait till we are sure our supporting library is loaded
-        // We add an onload on the script element, as this should fire before
-        // window.onload
-        document.getElementById('libs/ua-parser.min.js').onload =
-            _ => {
-                _UA_parser = new UAParser();
-            };
+        if (typeof UAParser !== 'undefined') {
+            _UA_parser = new UAParser();
+        }
+        else {
+            // Wait till we are sure our supporting library is loaded
+            // We add an onload on the script element, as this should fire before
+            // window.onload
+            document.getElementById('libs/ua-parser.min.js').onload =
+                _ => {
+                    _UA_parser = new UAParser();
+                };
+        }
 
         /**
          * Returns an object with some preformatted device information:
