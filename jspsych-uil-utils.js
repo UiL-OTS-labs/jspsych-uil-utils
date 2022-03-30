@@ -165,6 +165,21 @@ var uil = {};
         })
     }
 
+    function validateAccessKey(access_key) {
+        if (typeof(access_key) === "undefined") {
+            // Check if we have a pre-saved access key
+            if (typeof(_access_key) === "undefined") {
+                // If not, error and return
+                console.error("Function argument access_key is undefined.");
+                return;
+            }
+
+            // If we do, use that key
+            access_key = _access_key;
+        }
+        return access_key;
+    }
+
 
     /* ************ public functions ************** */
 
@@ -219,17 +234,7 @@ var uil = {};
         error_page = CRITICAL_ERROR_PAGE_LOCATION
     )
     {
-        if (typeof(access_key) === "undefined") {
-            // Check if we have a pre-saved access key
-            if (typeof(_access_key) === "undefined") {
-                // If not, error and return
-                console.error("Function argument access_key is undefined.");
-                return;
-            }
-
-            // If we do, use that key
-            access_key = _access_key;
-        }
+        access_key = validateAccessKey(access_key);
 
         if (typeof(acc_server) === "undefined") {
             acc_server = _acc_server;
@@ -277,19 +282,14 @@ var uil = {};
      *                 "acceptation server" for testing purposes. This parameter
      *                 is only usefull when running the experiment online
      * @memberof uil
+     * @deprecated use uil.saveJson() instead.
      */
     context.saveData = function (access_key, acc_server = undefined) {
 
-        if (typeof(access_key) === "undefined") {
-            // Check if we have a pre-saved access key
-            if (typeof(_access_key) === "undefined") {
-                // If not, error and return
-                console.error("Function argument access_key is undefined.");
-                return;
-            }
+        access_key = validateAccessKey(access_key);
 
-            // If we do, use that key
-            access_key = _access_key;
+        if (typeof(access_key) === "undefined") {
+            return;
         }
 
         let data = jsPsych.data.get().json();
@@ -309,6 +309,55 @@ var uil = {};
             jsPsych.data.displayData();
         }
     }
+
+    /**
+     * Saves a json formatted string the uilots data server or displays the data.
+     *
+     * Saves data to the uilots data server or displays the data 
+     * in the browser window. When the experiment is hosted via an http(s)://
+     * server the data will be send to the data server, otherwise this function
+     * assumes that you are testing your experiment on your own pc via
+     * the file protocol and will just display the json.
+     *
+     * @param {string} json a json formatted string.
+     * @param {string} access_key, the key obtain from the datastore server.
+     *                 Optional if key is set using setAccessKey
+     * @param {bool}   acc_server, true if the data should be stored at the
+     *                 "acceptation server" for testing purposes. This parameter
+     *                 is only usefull when running the experiment online
+     * @memberof uil
+     */
+    context.saveJson = function(json, access_key, acc_server = undefined) {
+
+        access_key = validateAccessKey(access_key);
+
+        if (typeof(access_key) === "undefined") {
+            return;
+        }
+        let key = access_key.trim();
+        let is_online = isOnline(getProtocol(), getHostname());
+        let server = context.resolveServer(acc_server);
+
+        if (is_online) {
+            if (uil.session.isActive()) {
+                uil.session.upload(key, data);
+            }
+            else {
+                saveOnDataServer(key, server, data);
+            }
+        }
+        else {
+            // show the data in prettyfied format
+            json = JSON.stringify(JSON.parse(json), null, 4);
+            // clear the body
+            document.body.innerHTML= '';
+            // Add preformatted json content.
+            let pre_element = document.createElement("pre");
+            pre_element.innerText = json;
+            document.body.append(pre_element);
+        }
+    }
+
 
     /**
      * Figures out which server we should be talking to
