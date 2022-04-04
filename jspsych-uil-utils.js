@@ -51,6 +51,8 @@ var uil = {};
     const CONTENT_TYPE = 'Content-Type';
     const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
 
+    const KNOWN_INVALID_ID = '00000000-0000-0000-0000-000000000000';
+
     const LIBRARIES = [
         'jspsych-uil-error.js',
         'jspsych-uil-randomization.js',
@@ -177,6 +179,21 @@ var uil = {};
             // If we do, use that key
             access_key = _access_key;
         }
+
+        let is_online = isOnline(getProtocol(), getHostname());
+
+        if (access_key === KNOWN_INVALID_ID) {
+            let message =
+                `The access_key is "${KNOWN_INVALID_ID}", you should update it.` +
+                "You can find the access_key in globals.js";
+            if (is_online) { // Threat as error when online
+                context.error.scriptError(message);
+                throw new TypeError("Bad access_key");
+            }
+            else { // and issue a warning when testing locally
+                console.log(message);
+            }
+        }
         return access_key;
     }
 
@@ -189,6 +206,10 @@ var uil = {};
      * Saves an access key to be used with all API related functions as an default.
      * If a default has been saved, one does not need to supply the access key anymore
      * to any function with it as a parameter.
+     * This acces key will be used for all subsequent communications with the
+     * dataserver. If you would like to change it, you would have to call this function
+     * again, otherwise the cached variable is used instead of the ones passed to the
+     * server.
      *
      * @param {string} access_key, the key obtain from the datastore server.
      */
@@ -198,7 +219,7 @@ var uil = {};
             return;
         }
 
-        _access_key = access_key.trim();
+        _access_key = validateAccessKey(access_key.trim());
     }
 
     /**
@@ -234,14 +255,19 @@ var uil = {};
         error_page = CRITICAL_ERROR_PAGE_LOCATION
     )
     {
-        access_key = validateAccessKey(access_key);
+        if (_access_key) {
+            access_key = _access_key;
+        }
+        else {
+            access_key = setAccessKey(access_key.trim());
+        }
 
         if (typeof(acc_server) === "undefined") {
             acc_server = _acc_server;
         }
 
         let is_online = isOnline(getProtocol(), getHostname());
-        let key = access_key.trim();
+        let key = access_key;
 
         if (is_online) {
             let server = "";
@@ -286,9 +312,15 @@ var uil = {};
      */
     context.saveData = function (access_key, acc_server = undefined) {
 
-        access_key = validateAccessKey(access_key);
+        if (_access_key) {
+            access_key = _access_key;
+        }
+        else {
+            setAccessKey(access_key);
+        }
 
         if (typeof(access_key) === "undefined") {
+            console.error("Unable to save without a valid access_key");
             return;
         }
 
@@ -329,9 +361,15 @@ var uil = {};
      */
     context.saveJson = function(json, access_key, acc_server = undefined) {
 
-        access_key = validateAccessKey(access_key);
+        if (_access_key) {
+            access_key = _access_key;
+        }
+        else {
+            access_key = setAccessKey(access_key);
+        }
 
         if (typeof(access_key) === "undefined") {
+            console.error("Unable to save without a valid access_key");
             return;
         }
         let key = access_key.trim();

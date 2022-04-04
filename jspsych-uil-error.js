@@ -71,6 +71,32 @@ else {
             dialog.append(p);
         };
 
+        /**
+         * Display an error dialog.
+         *
+         * This function displays errors with the script. Which may
+         * help the developpers of the script.
+         *
+         * @param {string} a message that is put in a paragraph of the
+         *                 error dialog.
+         */
+        context.scriptError = function (message) {
+
+            let dialog = _dialog;
+
+            if (_dialog === null) {
+                _dialog = createErrorDialog();
+                dialog = _dialog;
+            }
+
+            let p = document.createElement('p');
+
+            p.innerHTML = message;
+            p.style.textAlign = 'left';
+            p.style.color = '#C00A35';
+            dialog.append(p);
+        }
+
         function registerHandler() {
             let handler = context.alert;
             if (uil.isOnline()) {
