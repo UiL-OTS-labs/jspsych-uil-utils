@@ -220,6 +220,7 @@ var uil = {};
         }
 
         _access_key = validateAccessKey(access_key.trim());
+        return _access_key;
     }
 
     /**
@@ -259,8 +260,7 @@ var uil = {};
             access_key = _access_key;
         }
         else {
-            setAccessKey(access_key);
-            access_key = _access_key;
+            access_key = setAccessKey(access_key);
         }
 
         if (typeof(acc_server) === "undefined") {
@@ -317,8 +317,7 @@ var uil = {};
             access_key = _access_key;
         }
         else {
-            setAccessKey(access_key);
-            access_key = _access_key;
+            access_key = setAccessKey(access_key);
         }
 
         if (typeof(access_key) === "undefined") {
@@ -327,7 +326,7 @@ var uil = {};
         }
 
         let data = jsPsych.data.get().json();
-        let key = access_key.trim();
+        let key = access_key;
         let is_online = isOnline(getProtocol(), getHostname());
         let server = context.resolveServer(acc_server);
 
@@ -367,15 +366,14 @@ var uil = {};
             access_key = _access_key;
         }
         else {
-            setAccessKey(access_key);
-            access_key = _access_key;
+            access_key = setAccessKey(access_key);
         }
 
         if (typeof(access_key) === "undefined") {
             console.error("Unable to save without a valid access_key");
             return;
         }
-        let key = access_key.trim();
+        let key = access_key;
         let is_online = isOnline(getProtocol(), getHostname());
         let server = context.resolveServer(acc_server);
 
