@@ -51,16 +51,22 @@ else {
         return dialog;
     }
 
+    function getOrCreateDialog() {
+        let dialog = _dialog;
+        if (_dialog === null) {
+            _dialog = createErrorDialog();
+            dialog = _dialog;
+        }
+        return dialog
+    }
+
     let _dialog = null;
 
     (function (context) {
 
         context.alert = function(message, source, line) {
-            let dialog = _dialog;
-            if (_dialog === null) {
-                _dialog = createErrorDialog();
-                dialog = _dialog;
-            }
+
+            let dialog = getOrCreateDialog();
 
             let p = document.createElement('p');
             if (typeof source !== 'undefined' && typeof line !== 'undefined') {
@@ -82,7 +88,7 @@ else {
          */
         context.scriptError = function (message) {
 
-            let dialog = _dialog;
+            let dialog = getOrCreateDialog();
 
             if (_dialog === null) {
                 _dialog = createErrorDialog();
