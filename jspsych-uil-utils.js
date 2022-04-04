@@ -186,7 +186,7 @@ var uil = {};
             let message =
                 `The access_key is "${KNOWN_INVALID_ID}", you should update it.` +
                 "You can find the access_key in globals.js";
-            if (is_online) { // Threat as error when online
+            if (is_online) { // Treat as error when online
                 context.error.scriptError(message);
                 throw new TypeError("Bad access_key");
             }
