@@ -51,7 +51,7 @@ var uil = {};
     const CONTENT_TYPE = 'Content-Type';
     const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
 
-    const KNOWN_INVALID_ID = '00000000-0000-0000-0000-000000000000';
+    const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
     const LIBRARIES = [
         'jspsych-uil-error.js',
@@ -167,6 +167,22 @@ var uil = {};
         })
     }
 
+    /**
+     * Simple check of whether the uuid seems valid.
+     *
+     * This test just checks whether the form of the uuid is correct, it
+     * doesn't differntiate between version 1,2,3,4 or 5, nor does it
+     * check the variant.
+     *
+     * @param {string} id The id that should match a uuid
+     *
+     * @returns {boolean} True if the string is formatted as a UUID, false
+     * otherwise.
+     */
+    function isUUIDFormat(id) {
+        return id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+    }
+
     function validateAccessKey(access_key) {
         if (typeof(access_key) === "undefined") {
             // Check if we have a pre-saved access key
@@ -182,9 +198,27 @@ var uil = {};
 
         let is_online = isOnline(getProtocol(), getHostname());
 
-        if (access_key === KNOWN_INVALID_ID) {
+        if (!isUUIDFormat(access_key)) {
             let message =
-                `The access_key is "${KNOWN_INVALID_ID}", you should update it.` +
+                `The access_key ${access_key} is not in a valid format `       +
+                "It should be 5 groups of hexadecimal numbers (0-9 and a-f) "  +
+                "separated by one single '-'."                                 +
+                "The groups should contain 8,4,4,4,12 hexadecimal characters " +
+                "respectively.";
+
+            if (is_online) {
+                context.error.scriptError(
+                    message
+                );
+            }
+            else {
+                console.log(message);
+            }
+        }
+
+        if (access_key === NIL_UUID) {
+            let message =
+                `The access_key is "${NIL_UUID}", you should update it.` +
                 "You can find the access_key in globals.js";
             if (is_online) { // Treat as error when online
                 context.error.scriptError(message);
