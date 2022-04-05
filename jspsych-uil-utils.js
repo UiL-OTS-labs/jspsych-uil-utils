@@ -200,11 +200,10 @@ var uil = {};
 
         if (!isUUIDFormat(access_key)) {
             let message =
-                `The access_key ${access_key} is not in a valid format `       +
-                "It should be 5 groups of hexadecimal numbers (0-9 and a-f) "  +
-                "separated by one single '-'."                                 +
-                "The groups should contain 8,4,4,4,12 hexadecimal characters " +
-                "respectively.";
+                `The access_key ${access_key} is not in a valid format. Please `+
+                "make sure you have copied it correctly in your experiment. "   +
+                "It should be 5 groups of characters (0-9 or a-f) with "        +
+                "8, 4, 4, 4 and 12 characters per group respectively.";
 
             if (is_online) {
                 context.error.scriptError(
