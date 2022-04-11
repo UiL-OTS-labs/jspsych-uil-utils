@@ -508,7 +508,19 @@ var uil = {};
         LIBRARIES.forEach(library => context.loadLibrary(library));
     }
 
+    function verifyScheme(event) {
+        if (location.protocol === 'file:') {
+            let message = 'You seem to be running an experiment directly from an HTML file, which is not supported. You will now be redirected to a page with instructions on how to run your experiment using a local web server.';
+
+            alert(message);
+            window.location.href = 'https://uilots-labs.wp.hum.uu.nl/how-to/running-a-local-web-server/';
+        }
+    }
+
     // Load in all libraries
     loadAllLibraries();
+
+    // Check that we are running from a web server
+    verifyScheme();
 
 })(uil);
