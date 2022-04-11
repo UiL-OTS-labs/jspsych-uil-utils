@@ -51,6 +51,8 @@ var uil = {};
     const CONTENT_TYPE = 'Content-Type';
     const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
 
+    const NIL_UUID = '00000000-0000-0000-0000-000000000000';
+
     const LIBRARIES = [
         'jspsych-uil-error.js',
         'jspsych-uil-randomization.js',
@@ -165,6 +167,69 @@ var uil = {};
         })
     }
 
+    /**
+     * Simple check of whether the uuid seems valid.
+     *
+     * This test just checks whether the form of the uuid is correct, it
+     * doesn't differntiate between version 1,2,3,4 or 5, nor does it
+     * check the variant.
+     *
+     * @param {string} id The id that should match a uuid
+     *
+     * @returns {boolean} True if the string is formatted as a UUID, false
+     * otherwise.
+     */
+    function isUUIDFormat(id) {
+        return id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+    }
+
+    function validateAccessKey(access_key) {
+        if (typeof(access_key) === "undefined") {
+            // Check if we have a pre-saved access key
+            if (typeof(_access_key) === "undefined") {
+                // If not, error and return
+                console.error("Function argument access_key is undefined.");
+                return;
+            }
+
+            // If we do, use that key
+            access_key = _access_key;
+        }
+
+        let is_online = isOnline(getProtocol(), getHostname());
+
+        if (!isUUIDFormat(access_key)) {
+            let message =
+                `The access_key ${access_key} is not in a valid format. Please `+
+                "make sure you have copied it correctly in your experiment. "   +
+                "It should be 5 groups of characters (0-9 or a-f) with "        +
+                "8, 4, 4, 4 and 12 characters per group respectively.";
+
+            if (is_online) {
+                context.error.scriptError(
+                    message
+                );
+            }
+            else {
+                console.log(message);
+            }
+        }
+
+        if (access_key === NIL_UUID) {
+            let message =
+                `The access_key is "${NIL_UUID}", you should update it.` +
+                "You can find the access_key in globals.js";
+            if (is_online) { // Treat as error when online
+                context.error.scriptError(message);
+                throw new TypeError("Bad access_key");
+            }
+            else { // and issue a warning when testing locally
+                console.log(message);
+            }
+        }
+        return access_key;
+    }
+
 
     /* ************ public functions ************** */
 
@@ -174,6 +239,10 @@ var uil = {};
      * Saves an access key to be used with all API related functions as an default.
      * If a default has been saved, one does not need to supply the access key anymore
      * to any function with it as a parameter.
+     * This acces key will be used for all subsequent communications with the
+     * dataserver. If you would like to change it, you would have to call this function
+     * again, otherwise the cached variable is used instead of the ones passed to the
+     * server.
      *
      * @param {string} access_key, the key obtain from the datastore server.
      */
@@ -183,7 +252,8 @@ var uil = {};
             return;
         }
 
-        _access_key = access_key.trim();
+        _access_key = validateAccessKey(access_key.trim());
+        return _access_key;
     }
 
     /**
@@ -219,16 +289,11 @@ var uil = {};
         error_page = CRITICAL_ERROR_PAGE_LOCATION
     )
     {
-        if (typeof(access_key) === "undefined") {
-            // Check if we have a pre-saved access key
-            if (typeof(_access_key) === "undefined") {
-                // If not, error and return
-                console.error("Function argument access_key is undefined.");
-                return;
-            }
-
-            // If we do, use that key
+        if (_access_key) {
             access_key = _access_key;
+        }
+        else {
+            access_key = setAccessKey(access_key);
         }
 
         if (typeof(acc_server) === "undefined") {
@@ -236,7 +301,7 @@ var uil = {};
         }
 
         let is_online = isOnline(getProtocol(), getHostname());
-        let key = access_key.trim();
+        let key = access_key;
 
         if (is_online) {
             let server = "";
@@ -277,23 +342,24 @@ var uil = {};
      *                 "acceptation server" for testing purposes. This parameter
      *                 is only usefull when running the experiment online
      * @memberof uil
+     * @deprecated use uil.saveJson() instead.
      */
     context.saveData = function (access_key, acc_server = undefined) {
 
-        if (typeof(access_key) === "undefined") {
-            // Check if we have a pre-saved access key
-            if (typeof(_access_key) === "undefined") {
-                // If not, error and return
-                console.error("Function argument access_key is undefined.");
-                return;
-            }
-
-            // If we do, use that key
+        if (_access_key) {
             access_key = _access_key;
+        }
+        else {
+            access_key = setAccessKey(access_key);
+        }
+
+        if (typeof(access_key) === "undefined") {
+            console.error("Unable to save without a valid access_key");
+            return;
         }
 
         let data = jsPsych.data.get().json();
-        let key = access_key.trim();
+        let key = access_key;
         let is_online = isOnline(getProtocol(), getHostname());
         let server = context.resolveServer(acc_server);
 
@@ -309,6 +375,61 @@ var uil = {};
             jsPsych.data.displayData();
         }
     }
+
+    /**
+     * Saves a json formatted string the uilots data server or displays the data.
+     *
+     * Saves data to the uilots data server or displays the data 
+     * in the browser window. When the experiment is hosted via an http(s)://
+     * server the data will be send to the data server, otherwise this function
+     * assumes that you are testing your experiment on your own pc via
+     * the file protocol and will just display the json.
+     *
+     * @param {string} json a json formatted string.
+     * @param {string} access_key, the key obtain from the datastore server.
+     *                 Optional if key is set using setAccessKey
+     * @param {bool}   acc_server, true if the data should be stored at the
+     *                 "acceptation server" for testing purposes. This parameter
+     *                 is only usefull when running the experiment online
+     * @memberof uil
+     */
+    context.saveJson = function(json, access_key, acc_server = undefined) {
+
+        if (_access_key) {
+            access_key = _access_key;
+        }
+        else {
+            access_key = setAccessKey(access_key);
+        }
+
+        if (typeof(access_key) === "undefined") {
+            console.error("Unable to save without a valid access_key");
+            return;
+        }
+        let key = access_key;
+        let is_online = isOnline(getProtocol(), getHostname());
+        let server = context.resolveServer(acc_server);
+
+        if (is_online) {
+            if (uil.session.isActive()) {
+                uil.session.upload(key, data);
+            }
+            else {
+                saveOnDataServer(key, server, data);
+            }
+        }
+        else {
+            // show the data in prettyfied format
+            json = JSON.stringify(JSON.parse(json), null, 4);
+            // clear the body
+            document.body.innerHTML= '';
+            // Add preformatted json content.
+            let pre_element = document.createElement("pre");
+            pre_element.innerText = json;
+            document.body.append(pre_element);
+        }
+    }
+
 
     /**
      * Figures out which server we should be talking to
