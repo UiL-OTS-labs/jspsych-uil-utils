@@ -293,7 +293,7 @@ var uil = {};
             access_key = _access_key;
         }
         else {
-            access_key = setAccessKey(access_key);
+            access_key = uil.setAccessKey(access_key);
         }
 
         if (typeof(acc_server) === "undefined") {
@@ -350,7 +350,7 @@ var uil = {};
             access_key = _access_key;
         }
         else {
-            access_key = setAccessKey(access_key);
+            access_key = uil.setAccessKey(access_key);
         }
 
         if (typeof(access_key) === "undefined") {
