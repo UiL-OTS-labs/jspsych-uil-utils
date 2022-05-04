@@ -44,12 +44,12 @@ export function getBrowserInfo () {
         return undefined;
 
     return {
-        browser: context.getBrowser(),
-        device: context.getDevice(),
-        os: context.getOS(),
-        isMobile: context.isMobile(),
-        isTablet: context.isTablet(),
-        isTouchCapable: context.isTouchCapable(),
+        browser: getBrowser(),
+        device: getDevice(),
+        os: getOS(),
+        isMobile: isMobile(),
+        isTablet: isTablet(),
+        isTouchCapable: isTouchCapable(),
     };
 }
 
@@ -245,7 +245,7 @@ export function isTablet () {
  *
  * @returns {boolean}
  */
-export function isMobileOrTable () {
+export function isMobileOrTablet () {
     return isMobile() || isTablet();
 }
 
@@ -292,5 +292,5 @@ function _reject(predicate, location) {
     }
 }
 
-export let rejectMobile = () => _reject(context.isMobile, MOBILE_ERROR_PAGE_LOCATION);
-export let rejectMobileOrTablet = () => _reject(context.isMobileOrTablet, MOBILE_ERROR_PAGE_LOCATION);
+export let rejectMobile = () => _reject(isMobile, MOBILE_ERROR_PAGE_LOCATION);
+export let rejectMobileOrTablet = () => _reject(isMobileOrTablet, MOBILE_ERROR_PAGE_LOCATION);

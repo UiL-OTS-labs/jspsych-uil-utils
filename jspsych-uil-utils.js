@@ -197,7 +197,7 @@ function validateAccessKey(access_key) {
             "8, 4, 4, 4 and 12 characters per group respectively.";
 
         if (is_online) {
-            context.error.scriptError(
+            error.scriptError(
                 message
             );
         }
@@ -211,7 +211,7 @@ function validateAccessKey(access_key) {
             `The access_key is "${NIL_UUID}", you should update it.` +
             "You can find the access_key in globals.js";
         if (is_online) { // Treat as error when online
-            context.error.scriptError(message);
+            error.scriptError(message);
             throw new TypeError("Bad access_key");
         }
         else { // and issue a warning when testing locally
@@ -352,7 +352,7 @@ export function saveData (access_key, acc_server = undefined) {
     let data = jsPsych.data.get().json();
     let key = access_key;
     let is_online = isOnline(getProtocol(), getHostname());
-    let server = context.resolveServer(acc_server);
+    let server = resolveServer(acc_server);
 
     if (is_online) {
         if (uil.session.isActive()) {
@@ -399,7 +399,7 @@ export function saveJson (json, access_key, acc_server = undefined) {
     }
     let key = access_key;
     let is_online = isOnline(getProtocol(), getHostname());
-    let server = context.resolveServer(acc_server);
+    let server = resolveServer(acc_server);
 
     if (is_online) {
         if (uil.session.isActive()) {
