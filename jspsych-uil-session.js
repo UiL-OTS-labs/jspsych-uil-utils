@@ -18,6 +18,13 @@
 
 import {resolveServer} from "./jspsych-uil-utils.js";
 
+export {
+    isActive,
+    start,
+    upload,
+    subjectId
+};
+
 /**
  * Class for handling all requests to the server
  */
@@ -97,7 +104,7 @@ var subject_id = null;
  * Used to check if a session has already started
  * @returns {boolean}
  */
-export function isActive () {
+function isActive () {
     return session_id !== null;
 }
 
@@ -111,7 +118,7 @@ export function isActive () {
  * @param {string} access_key - Access key for the experiment
  * @param {sessionCallback} callback - Callback function that receives information about the session
  */
-export function start (access_key, callback) {
+function start (access_key, callback) {
     let api = new API(resolveServer());
         api.sessionStart(access_key).then((data) => {
         session_id = data.uuid;
@@ -125,7 +132,7 @@ export function start (access_key, callback) {
  * @param {string} access_key - Access key for the experiment
  * @param {string} data - Data to be sent to the server, in plain text
  */
-export function upload (access_key, data) {
+function upload (access_key, data) {
     let api = new API(resolveServer());
     if (session_id === null) {
         throw new Error('No active session!');
@@ -139,7 +146,7 @@ export function upload (access_key, data) {
  *
  * @returns the subject_id from the data store.
  */
-export function subjectId () {
+function subjectId () {
     if (session_id === null) {
         throw new Error('No active session')
     }
