@@ -29,6 +29,16 @@ export {
     session,
 }
 
+export {
+    isOnline,
+    setAccessKey,
+    useAcceptationServer,
+    stopIfExperimentClosed,
+    saveData,
+    saveJson,
+    resolveServer
+}
+
 
 /* ********* constants *********** */
 
@@ -77,7 +87,7 @@ function isFileProtocol(protocol) {
 }
 
 
-export function isOnline(
+function isOnline(
     protocol = getHostname(),
     hostname = getProtocol()
 ) {
@@ -237,7 +247,7 @@ function validateAccessKey(access_key) {
      *
      * @param {string} access_key, the key obtain from the datastore server.
      */
-export function setAccessKey (access_key) {
+function setAccessKey (access_key) {
     if (typeof(access_key) === "undefined") {
         console.error("Function argument access_key is undefined.");
         return;
@@ -253,7 +263,7 @@ export function setAccessKey (access_key) {
      * Instructs all API methods to use the acceptation datastore server. This can
      * be overriden on a per-call method using the ``acc_server`` parameter;
      */
-export function useAcceptationServer () {
+function useAcceptationServer () {
     _acc_server = true;
 }
 
@@ -273,7 +283,7 @@ export function useAcceptationServer () {
  *                 fails.
  * @memberof uil
  */
-export function stopIfExperimentClosed (
+function stopIfExperimentClosed (
     access_key = undefined,
     acc_server = undefined,
     stop_page = CLOSED_EXPERIMENT_PAGE_LOCATION,
@@ -335,7 +345,7 @@ export function stopIfExperimentClosed (
  * @memberof uil
  * @deprecated use uil.saveJson() instead.
  */
-export function saveData (access_key, acc_server = undefined) {
+function saveData (access_key, acc_server = undefined) {
 
     if (_access_key) {
         access_key = _access_key;
@@ -384,7 +394,7 @@ export function saveData (access_key, acc_server = undefined) {
  *                 is only usefull when running the experiment online
  * @memberof uil
  */
-export function saveJson (json, access_key, acc_server = undefined) {
+function saveJson (json, access_key, acc_server = undefined) {
 
     if (_access_key) {
         access_key = _access_key;
@@ -425,7 +435,7 @@ export function saveJson (json, access_key, acc_server = undefined) {
 /**
  * Figures out which server we should be talking to
  */
-export function resolveServer (acc_server = undefined) {
+function resolveServer (acc_server = undefined) {
     if (typeof(acc_server) === "undefined") {
         acc_server = _acc_server;
     }

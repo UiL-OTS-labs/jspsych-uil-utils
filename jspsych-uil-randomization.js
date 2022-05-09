@@ -17,6 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+export {
+    randomizeStimuli,
+    randomizeStimuliConstraints,
+    randomShuffle,
+    randomShuffleConstraints,
+    stimuliMeetConstraints
+};
+
 const NOT_SHUFFLED_ERROR_MSG =
     "Unable to shuffle according to the constraints, " +
     "perhaps it is an idea to loosen the constraints.";
@@ -213,7 +221,7 @@ function randomizePrivate(
  * @returns {null|[]} The randomized order. Null if randomization
  * failed, in which case an error will have been logged to the console
  */
-export function randomizeStimuli (
+function randomizeStimuli (
     original_stimuli,
     max_same_type = 2,
     type_key = 'item_type'
@@ -238,7 +246,7 @@ export function randomizeStimuli (
  * @returns {null|[]} The randomized order. Null if randomization
  * failed, in which case an error will have been logged to the console
  */
-export function randomizeStimuliConstraints (
+function randomizeStimuliConstraints (
     original_stimuli,
     constraints = {'item_type' : 2},
     max_tries = 10
@@ -253,7 +261,7 @@ export function randomizeStimuliConstraints (
  *
  * @return {Array} A shuffled version of the input.
  */
-export function randomShuffle (original_stimuli) {
+function randomShuffle (original_stimuli) {
     let copy = Array.from(original_stimuli);
     for (let i = 0; i < copy.length; i++) {
         let swap_index = i + Math.floor(
@@ -283,7 +291,7 @@ export function randomShuffle (original_stimuli) {
  *
  * @return {null|Array.<Object>}
  */
-export function randomShuffleConstraints (
+function randomShuffleConstraints (
     original_stimuli,
     constraints= {},
     max_tries= 10
@@ -313,7 +321,7 @@ export function randomShuffleConstraints (
  * @param stimuli {Array.<object>}
  * @param constraints {Object}
  */
-export function stimuliMeetConstraints (stimuli, constraints) {
+function stimuliMeetConstraints (stimuli, constraints) {
     let valid = true;
     stimuli.forEach((element, index, array) => {
         for (const [key, max] of Object.entries(constraints)) {

@@ -20,6 +20,20 @@
 
 import "./libs/ua-parser.js"; // ua-parser.js makes the UAParser "class" global.
 
+export {
+    getBrowserInfo,
+    getResolutionInfo,
+    getBrowser,
+    getDevice,
+    getOS,
+    isMobile,
+    isTablet,
+    isMobileOrTablet,
+    isTouchCapable,
+    rejectMobile,
+    rejectMobileOrTablet
+};
+
 const MOBILE_ERROR_PAGE_LOCATION =
       'https://web-experiments.lab.hum.uu.nl/index_files/mobile/';
 
@@ -39,7 +53,7 @@ let _UA_parser = new UAParser();
  * function will return undefined. (You should always wrap your
  * experiment in an onload function anyway).
  */
-export function getBrowserInfo () {
+function getBrowserInfo () {
     if(typeof _UA_parser === 'undefined')
         return undefined;
 
@@ -91,7 +105,7 @@ export function getBrowserInfo () {
  * Thus,this variable can tell you if a user is using HDPI and/or
  * is zoomed in.
  */
-export function getResolutionInfo () {
+function getResolutionInfo () {
     let output = {
         actualWidth: -1,
         actualHeight: -1,
@@ -126,7 +140,7 @@ export function getResolutionInfo () {
 
  * @returns {string|undefined}
  */
-export function getBrowser () {
+function getBrowser () {
     if(typeof _UA_parser === 'undefined')
         return undefined;
 
@@ -145,7 +159,7 @@ export function getBrowser () {
  *
  * @returns {string|undefined}
  */
-export function getDevice () {
+function getDevice () {
     if(typeof _UA_parser === 'undefined')
         return undefined;
 
@@ -178,7 +192,7 @@ export function getDevice () {
  *
  * @returns {string|undefined}
  */
-export function getOS () {
+function getOS () {
     if(typeof _UA_parser === 'undefined')
         return undefined;
 
@@ -200,7 +214,7 @@ export function getOS () {
  * NOTE: Some android tablets will also be seen as a smartphone!
  * @returns {boolean}
  */
-export function isMobile () {
+function isMobile () {
     // Use UAParser if it's already loaded. It's more accurate
     if (typeof _UA_parser !== "undefined")
     {
@@ -222,7 +236,7 @@ export function isMobile () {
  *
  * @returns {boolean}
  */
-export function isTablet () {
+function isTablet () {
     // Use UAParser if it's already loaded. It's more accurate
     if (typeof _UA_parser !== "undefined")
     {
@@ -245,7 +259,7 @@ export function isTablet () {
  *
  * @returns {boolean}
  */
-export function isMobileOrTablet () {
+function isMobileOrTablet () {
     return isMobile() || isTablet();
 }
 
@@ -262,7 +276,7 @@ export function isMobileOrTablet () {
  *
  * @returns {boolean} True if the browser has a touch screen
  */
-export function isTouchCapable () {
+function isTouchCapable () {
     let has_touchscreen = false;
     // (ms)maxTouchPoints refers to the amount of fingers that can be
     // registered on a screen
@@ -292,5 +306,5 @@ function _reject(predicate, location) {
     }
 }
 
-export let rejectMobile = () => _reject(isMobile, MOBILE_ERROR_PAGE_LOCATION);
-export let rejectMobileOrTablet = () => _reject(isMobileOrTablet, MOBILE_ERROR_PAGE_LOCATION);
+let rejectMobile = () => _reject(isMobile, MOBILE_ERROR_PAGE_LOCATION);
+let rejectMobileOrTablet = () => _reject(isMobileOrTablet, MOBILE_ERROR_PAGE_LOCATION);
