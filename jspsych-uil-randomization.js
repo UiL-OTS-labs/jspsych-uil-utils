@@ -305,7 +305,7 @@ function randomShuffleConstraints (
     // We break out of the loop after max_tries or a valid input
     // has been found.
     for (let i = 0; i < max_tries && output === null; i++) {
-        let copy = uil.randomization.randomShuffle(original_stimuli);
+        let copy = randomShuffle(original_stimuli);
         output = fixOrderForConstraints(copy, constraints);
     }
     if (output === null) {
