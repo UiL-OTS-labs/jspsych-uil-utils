@@ -1,6 +1,0 @@
-(undo-tree-save-format-version . 1)
-"8ab539a0d978afd24a913a8b84dff7cec4fdc3a5"
-[nil nil nil nil (25210 11368 549947 879000) 0 nil]
-([nil nil ((299 . 313) (#("firefox" 0 7 (fontified t face font-lock-string-face)) . 299) (t 25210 11315 622621 968000)) nil (25210 11368 549946 634000) 0 nil])
-([nil current ((320 . 321) 312) nil (25210 11368 549942 377000) 0 nil])
-nil
