@@ -177,19 +177,19 @@ describe('randomization', () => {
             niters,
             randomization.randomShuffle,
             constraints,
-        )).toBeLessThan(1);
+        )).toBeLessThan(100);
 
         expect(benchmarkFunction(
             niters,
             randomization.randomizeStimuliConstraints,
             constraints,
-        )).toBeLessThan(1);
+        )).toBeLessThan(100);
 
         expect(benchmarkFunction(
             niters,
             randomization.randomShuffleConstraints,
             constraints,
-        )).toBeLessThan(1);
+        )).toBeLessThan(100);
 
         constraints = {
             item_type : 2,
@@ -200,12 +200,12 @@ describe('randomization', () => {
             niters,
             randomization.randomizeStimuliConstraints,
             constraints,
-        )).toBeLessThan(1);
+        )).toBeLessThan(100);
 
         expect(benchmarkFunction(
             niters,
             randomization.randomShuffleConstraints,
             constraints,
-        )).toBeLessThan(1);
+        )).toBeLessThan(100);
     });
 });
