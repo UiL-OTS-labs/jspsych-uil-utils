@@ -413,10 +413,10 @@ function saveJson (json, access_key, acc_server = undefined) {
 
     if (is_online) {
         if (uil.session.isActive()) {
-            uil.session.upload(key, data);
+            uil.session.upload(key, json);
         }
         else {
-            saveOnDataServer(key, server, data);
+            saveOnDataServer(key, server, json);
         }
     }
     else {
