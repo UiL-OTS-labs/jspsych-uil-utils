@@ -105,8 +105,8 @@ function getProtocol() {
 
 
 function isOnline(
-    protocol = getHostname(),
-    hostname = getProtocol()
+    protocol = getProtocol(),
+    hostname = getHostname()
 ) {
     let prot_online = protocol === "http:" || protocol === "https:";
     let host_online = hostname !== "localhost" && hostname !== "127.0.0.1" ;
