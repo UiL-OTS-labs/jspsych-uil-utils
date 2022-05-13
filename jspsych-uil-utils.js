@@ -1,4 +1,3 @@
-"use strict";
 /*
  * one line to give the program's name and an idea of what it does.
  * Copyright (C) 2020  Maarten Duijndam
@@ -18,220 +17,222 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import * as error from "./jspsych-uil-error.js"
+import * as browser from "./jspsych-uil-browser.js"
+import * as randomization from "./jspsych-uil-randomization.js"
+import * as session from "./jspsych-uil-session.js"
+
+export {
+    error,
+    browser,
+    randomization,
+    session,
+}
+
+export {
+    isOnline,
+    setAccessKey,
+    useAcceptationServer,
+    stopIfExperimentClosed,
+    saveData,
+    saveJson,
+    resolveServer
+}
+
+
+/* ********* constants *********** */
+
+const DATA_STORE_PRODUCTION_SERVER =
+    'https://experiment-datastore.lab.hum.uu.nl/api/';
+
+const DATA_STORE_ACCEPTATION_SERVER =
+    'https://experiment-datastore.acc.lab.hum.uu.nl/api/';
+
+const CLOSED_EXPERIMENT_PAGE_LOCATION =
+    'https://web-experiments.lab.hum.uu.nl/index_files/closed/';
+const CRITICAL_ERROR_PAGE_LOCATION =
+    'https://web-experiments.lab.hum.uu.nl/index_files/error/';
+
+const DATA_UPLOAD_ENDPOINT = '/upload/';
+const DATA_METADATA_ENDPOINT = '/metadata/';
+
+const POST = 'POST';
+const GET = 'GET';
+
+const CONTENT_TYPE = 'Content-Type';
+const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
+
+const NIL_UUID = '00000000-0000-0000-0000-000000000000';
+
+/* ************ private variables ************* */
+
+let _access_key = undefined;
+
+let _acc_server = false;
+
+let _datastore_metadata = undefined;
+
+/* ************ private functions ************* */
+
+function getHostname() {
+    return window.location.hostname;
+}
+
+function getProtocol() {
+    return window.location.protocol;
+}
+
+function isFileProtocol(protocol) {
+    return protocol === "file:";
+}
+
+
+function isOnline(
+    protocol = getHostname(),
+    hostname = getProtocol()
+) {
+    let prot_online = protocol === "http:" || protocol === "https:";
+    let host_online = hostname !== "localhost" && hostname !== "127.0.0.1" ;
+    return prot_online && host_online;
+}
 
 /**
- * Namespace global variable called uil.
+ * saves the data obtained from jsPsych on the webserver.
+ *
+ * @private
+ * @param {string} access_key The key obtain while registering the dataserver
+ * @param {string} server the server to which the data should be posted.
+ * @param {string} data the research data to send to the datastorage server.
  */
-var uil = {};
+function saveOnDataServer(access_key, server, data) {
+
+    var xhr = new XMLHttpRequest();
+    xhr.open(POST, server + access_key + DATA_UPLOAD_ENDPOINT);
+
+    // Don't change, server only accepts plain text
+    xhr.setRequestHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_PLAIN);
+    xhr.onload = function() {
+        if(xhr.status === 200){
+            console.log("Upload status = 200 " + xhr.response);
+        }
+        else {
+            console.error("Error while uploading status = " + xhr.status);
+            console.error("Response = " + xhr.response);
+        }
+    };
+    xhr.send(data);
+}
 
 /**
- * populate the uil namespace with functions.
+ * Loads experiment metadata from the Datastore status API
+ *
+ * @private
+ * @param {string} access_key The key obtain while registering the dataserver
+ * @param {string} server the server to which the data should be posted.
+ * @return {Promise}
  */
-(function(context) {
+function getDatastoreMetadata(access_key, server) {
 
-    /* ********* constants *********** */
+    if (typeof(_datastore_metadata) !== "undefined")
+        // If we already have the data, return a auto-fulfilling promise
+        return new Promise((resolve, _) => {resolve(_datastore_metadata);});
 
-    const DATA_STORE_PRODUCTION_SERVER =
-        'https://experiment-datastore.lab.hum.uu.nl/api/';
+    let xhr = new XMLHttpRequest();
 
-    const DATA_STORE_ACCEPTATION_SERVER =
-        'https://experiment-datastore.acc.lab.hum.uu.nl/api/';
+    // As this is an async call, we return a promise. That way we can
+    // actually easily do stuff with the result.
+    return new Promise((resolve, reject) => {
+        let url = server + access_key + DATA_METADATA_ENDPOINT;
+        xhr.open(GET, url);
+        xhr.responseType = "json";
 
-    const CLOSED_EXPERIMENT_PAGE_LOCATION =
-        'https://web-experiments.lab.hum.uu.nl/index_files/closed/';
-    const CRITICAL_ERROR_PAGE_LOCATION = 
-        'https://web-experiments.lab.hum.uu.nl/index_files/error/';
-
-    const DATA_UPLOAD_ENDPOINT = '/upload/';
-    const DATA_METADATA_ENDPOINT = '/metadata/';
-
-    const POST = 'POST';
-    const GET = 'GET';
-
-    const CONTENT_TYPE = 'Content-Type';
-    const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
-
-    const NIL_UUID = '00000000-0000-0000-0000-000000000000';
-
-    const LIBRARIES = [
-        'jspsych-uil-error.js',
-        'jspsych-uil-randomization.js',
-        'jspsych-uil-browser.js',
-        'jspsych-uil-session.js',
-    ];
-
-    const PRIVATE_LIBRARIES = [
-        'libs/ua-parser.min.js', // Dependency of uil-browser
-    ];
-
-    // The directory this script lives in
-    const SCRIPT_DIR = document.currentScript.src.split('/').slice(0, -1).join('/');
-
-    /* ************ private variables ************* */
-
-    let _access_key = undefined;
-
-    let _acc_server = false;
-
-    let _datastore_metadata = undefined;
-
-    /* ************ private functions ************* */
-
-    function getHostname() {
-        return window.location.hostname;
-    }
-
-    function getProtocol() {
-        return window.location.protocol;
-    }
-
-    function isFileProtocol(protocol) {
-        return protocol === "file:";
-    }
-
-    function isOnline(protocol, hostname) {
-        let prot_online = protocol === "http:" || protocol === "https:";
-        let host_online = hostname !== "localhost" && hostname !== "127.0.0.1" ;
-        return prot_online && host_online;
-    }
-
-    /**
-     * saves the data obtained from jsPsych on the webserver.
-     *
-     * @private
-     * @param {string} access_key The key obtain while registering the dataserver
-     * @param {string} server the server to which the data should be posted.
-     * @param {string} data the research data to send to the datastorage server.
-     */
-    function saveOnDataServer(access_key, server, data) {
-
-        var xhr = new XMLHttpRequest();
-        xhr.open(POST, server + access_key + DATA_UPLOAD_ENDPOINT);
-
-        // Don't change, server only accepts plain text
-        xhr.setRequestHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_PLAIN); 
         xhr.onload = function() {
             if(xhr.status === 200){
-                console.log("Upload status = 200 " + xhr.response);
+                _datastore_metadata = xhr.response;
+                resolve(xhr.response);
             }
             else {
                 console.error("Error while uploading status = " + xhr.status);
                 console.error("Response = " + xhr.response);
+                reject(new Error(String(xhr.status) + ": " + String(xhr.response)));
             }
         };
-        xhr.send(data);
-    }
 
-    /**
-     * Loads experiment metadata from the Datastore status API
-     *
-     * @private
-     * @param {string} access_key The key obtain while registering the dataserver
-     * @param {string} server the server to which the data should be posted.
-     * @return {Promise}
-     */
-    function getDatastoreMetadata(access_key, server) {
-
-        if (typeof(_datastore_metadata) !== "undefined")
-            // If we already have the data, return a auto-fulfilling promise
-            return new Promise((resolve, _) => {resolve(_datastore_metadata);});
-
-        let xhr = new XMLHttpRequest();
-
-        // As this is an async call, we return a promise. That way we can
-        // actually easily do stuff with the result.
-        return new Promise((resolve, reject) => {
-            let url = server + access_key + DATA_METADATA_ENDPOINT;
-            xhr.open(GET, url);
-            xhr.responseType = "json";
-
-            xhr.onload = function() {
-                if(xhr.status === 200){
-                    _datastore_metadata = xhr.response;
-                    resolve(xhr.response);
-                }
-                else {
-                    console.error("Error while uploading status = " + xhr.status);
-                    console.error("Response = " + xhr.response);
-                    reject(new Error(String(xhr.status) + ": " + String(xhr.response)));
-                }
-            };
-
-            function onerror() {
-                reject(new Error("UiL-OTS datastore server is unavailable"));
-            }
-            
-            xhr.onerror = onerror;
-
-            xhr.send();
-        })
-    }
-
-    /**
-     * Simple check of whether the uuid seems valid.
-     *
-     * This test just checks whether the form of the uuid is correct, it
-     * doesn't differntiate between version 1,2,3,4 or 5, nor does it
-     * check the variant.
-     *
-     * @param {string} id The id that should match a uuid
-     *
-     * @returns {boolean} True if the string is formatted as a UUID, false
-     * otherwise.
-     */
-    function isUUIDFormat(id) {
-        return id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
-    }
-
-    function validateAccessKey(access_key) {
-        if (typeof(access_key) === "undefined") {
-            // Check if we have a pre-saved access key
-            if (typeof(_access_key) === "undefined") {
-                // If not, error and return
-                console.error("Function argument access_key is undefined.");
-                return;
-            }
-
-            // If we do, use that key
-            access_key = _access_key;
+        function onerror() {
+            reject(new Error("UiL-OTS datastore server is unavailable"));
         }
 
-        let is_online = isOnline(getProtocol(), getHostname());
+        xhr.onerror = onerror;
 
-        if (!isUUIDFormat(access_key)) {
-            let message =
-                `The access_key ${access_key} is not in a valid format. Please `+
-                "make sure you have copied it correctly in your experiment. "   +
-                "It should be 5 groups of characters (0-9 or a-f) with "        +
-                "8, 4, 4, 4 and 12 characters per group respectively.";
+        xhr.send();
+    })
+}
 
-            if (is_online) {
-                context.error.scriptError(
-                    message
-                );
-            }
-            else {
-                console.log(message);
-            }
+/**
+ * Simple check of whether the uuid seems valid.
+ *
+ * This test just checks whether the form of the uuid is correct, it
+ * doesn't differntiate between version 1,2,3,4 or 5, nor does it
+ * check the variant.
+ *
+ * @param {string} id The id that should match a uuid
+ *
+ * @returns {boolean} True if the string is formatted as a UUID, false
+ * otherwise.
+ */
+function isUUIDFormat(id) {
+    return id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+}
+
+function validateAccessKey(access_key) {
+    if (typeof(access_key) === "undefined") {
+        // Check if we have a pre-saved access key
+        if (typeof(_access_key) === "undefined") {
+            // If not, error and return
+            console.error("Function argument access_key is undefined.");
+            return;
         }
 
-        if (access_key === NIL_UUID) {
-            let message =
-                `The access_key is "${NIL_UUID}", you should update it.` +
-                "You can find the access_key in globals.js";
-            if (is_online) { // Treat as error when online
-                context.error.scriptError(message);
-                throw new TypeError("Bad access_key");
-            }
-            else { // and issue a warning when testing locally
-                console.log(message);
-            }
-        }
-        return access_key;
+        // If we do, use that key
+        access_key = _access_key;
     }
 
+    let is_online = isOnline(getProtocol(), getHostname());
 
-    /* ************ public functions ************** */
+    if (!isUUIDFormat(access_key)) {
+        let message =
+            `The access_key ${access_key} is not in a valid format. Please `+
+            "make sure you have copied it correctly in your experiment. "   +
+            "It should be 5 groups of characters (0-9 or a-f) with "        +
+            "8, 4, 4, 4 and 12 characters per group respectively.";
+
+        if (is_online) {
+            error.scriptError(
+                message
+            );
+        }
+        else {
+            console.log(message);
+        }
+    }
+
+    if (access_key === NIL_UUID) {
+        let message =
+            `The access_key is "${NIL_UUID}", you should update it.` +
+            "You can find the access_key in globals.js";
+        if (is_online) { // Treat as error when online
+            error.scriptError(message);
+            throw new TypeError("Bad access_key");
+        }
+        else { // and issue a warning when testing locally
+            console.log(message);
+        }
+    }
+    return access_key;
+}
+
+
+/* ************ public functions ************** */
 
     /**
      * Saves an access key to be used with all API related functions as an default.
@@ -246,15 +247,15 @@ var uil = {};
      *
      * @param {string} access_key, the key obtain from the datastore server.
      */
-    context.setAccessKey = function (access_key) {
-        if (typeof(access_key) === "undefined") {
-            console.error("Function argument access_key is undefined.");
-            return;
-        }
-
-        _access_key = validateAccessKey(access_key.trim());
-        return _access_key;
+function setAccessKey (access_key) {
+    if (typeof(access_key) === "undefined") {
+        console.error("Function argument access_key is undefined.");
+        return;
     }
+
+    _access_key = validateAccessKey(access_key.trim());
+    return _access_key;
+}
 
     /**
      * Instructs all API methods to use the acceptation datastore server.
@@ -262,253 +263,185 @@ var uil = {};
      * Instructs all API methods to use the acceptation datastore server. This can
      * be overriden on a per-call method using the ``acc_server`` parameter;
      */
-    context.useAcceptationServer = function () {
-        _acc_server = true;
+function useAcceptationServer () {
+    _acc_server = true;
+}
+
+/**
+ * This function will redirect the user away if the experiment is closed.
+ *
+ * This function will redirect the user to a 'experiment closed' page
+ * if the experiment is closed according to the datastore.
+ *
+ * @param {string} access_key, the key obtain from the datastore server.
+ *                 Optional if key is set using setAccessKey
+ * @param {bool}   acc_server, true if the data should be stored at the
+ *                 "acceptation server" for testing purposes. This parameter
+ *                 is only usefull when running the experiment online
+ * @param {string} A page to land when the experiment is closed
+ * @param {string} A page to land when the communication with the datastore
+ *                 fails.
+ * @memberof uil
+ */
+function stopIfExperimentClosed (
+    access_key = undefined,
+    acc_server = undefined,
+    stop_page = CLOSED_EXPERIMENT_PAGE_LOCATION,
+    error_page = CRITICAL_ERROR_PAGE_LOCATION
+)
+{
+    if (_access_key) {
+        access_key = _access_key;
+    }
+    else {
+        access_key = uil.setAccessKey(access_key);
     }
 
-    /**
-     * This function will redirect the user away if the experiment is closed.
-     *
-     * This function will redirect the user to a 'experiment closed' page
-     * if the experiment is closed according to the datastore.
-     *
-     * @param {string} access_key, the key obtain from the datastore server.
-     *                 Optional if key is set using setAccessKey
-     * @param {bool}   acc_server, true if the data should be stored at the
-     *                 "acceptation server" for testing purposes. This parameter
-     *                 is only usefull when running the experiment online
-     * @param {string} A page to land when the experiment is closed
-     * @param {string} A page to land when the communication with the datastore
-     *                 fails. 
-     * @memberof uil
-     */
-    context.stopIfExperimentClosed = function(
-        access_key = undefined,
-        acc_server = undefined,
-        stop_page = CLOSED_EXPERIMENT_PAGE_LOCATION,
-        error_page = CRITICAL_ERROR_PAGE_LOCATION
-    )
-    {
-        if (_access_key) {
-            access_key = _access_key;
-        }
-        else {
-            access_key = setAccessKey(access_key);
-        }
-
-        if (typeof(acc_server) === "undefined") {
-            acc_server = _acc_server;
-        }
-
-        let is_online = isOnline(getProtocol(), getHostname());
-        let key = access_key;
-
-        if (is_online) {
-            let server = "";
-            if (!acc_server)
-                server = DATA_STORE_PRODUCTION_SERVER;
-            else
-                server = DATA_STORE_ACCEPTATION_SERVER;
-
-            let getDatastoreMetadataResolve = function(data) {
-                let state = data['state'];
-                if (state !== "Open" && state !== "Piloting") {
-                    window.location = stop_page;
-                }
-            }
-            let getDatastoreMetadataReject = function (error) {
-                window.location = error_page;
-            }
-
-            getDatastoreMetadata(key, server).then(
-                getDatastoreMetadataResolve,
-                getDatastoreMetadataReject
-            );
-        }
+    if (typeof(acc_server) === "undefined") {
+        acc_server = _acc_server;
     }
 
-    /**
-     * Saves data to the uilots data server or displays the data.
-     *
-     * Saves data to the uilots data server or displays the data 
-     * in the browser window. When the experiment is hosted via an http(s)://
-     * server the data will be send to the data server, otherwise this function
-     * assumes that you are testing your experiment on your own pc via
-     * the file protocol.
-     *
-     * @param {string} access_key, the key obtain from the datastore server.
-     *                 Optional if key is set using setAccessKey
-     * @param {bool}   acc_server, true if the data should be stored at the
-     *                 "acceptation server" for testing purposes. This parameter
-     *                 is only usefull when running the experiment online
-     * @memberof uil
-     * @deprecated use uil.saveJson() instead.
-     */
-    context.saveData = function (access_key, acc_server = undefined) {
+    let is_online = isOnline(getProtocol(), getHostname());
+    let key = access_key;
 
-        if (_access_key) {
-            access_key = _access_key;
-        }
-        else {
-            access_key = setAccessKey(access_key);
-        }
-
-        if (typeof(access_key) === "undefined") {
-            console.error("Unable to save without a valid access_key");
-            return;
-        }
-
-        let data = jsPsych.data.get().json();
-        let key = access_key;
-        let is_online = isOnline(getProtocol(), getHostname());
-        let server = context.resolveServer(acc_server);
-
-        if (is_online) {
-            if (uil.session.isActive()) {
-                uil.session.upload(key, data);
-            }
-            else {
-                saveOnDataServer(key, server, data);
-            }
-        }
-        else {
-            jsPsych.data.displayData();
-        }
-    }
-
-    /**
-     * Saves a json formatted string the uilots data server or displays the data.
-     *
-     * Saves data to the uilots data server or displays the data 
-     * in the browser window. When the experiment is hosted via an http(s)://
-     * server the data will be send to the data server, otherwise this function
-     * assumes that you are testing your experiment on your own pc via
-     * the file protocol and will just display the json.
-     *
-     * @param {string} json a json formatted string.
-     * @param {string} access_key, the key obtain from the datastore server.
-     *                 Optional if key is set using setAccessKey
-     * @param {bool}   acc_server, true if the data should be stored at the
-     *                 "acceptation server" for testing purposes. This parameter
-     *                 is only usefull when running the experiment online
-     * @memberof uil
-     */
-    context.saveJson = function(json, access_key, acc_server = undefined) {
-
-        if (_access_key) {
-            access_key = _access_key;
-        }
-        else {
-            access_key = setAccessKey(access_key);
-        }
-
-        if (typeof(access_key) === "undefined") {
-            console.error("Unable to save without a valid access_key");
-            return;
-        }
-        let key = access_key;
-        let is_online = isOnline(getProtocol(), getHostname());
-        let server = context.resolveServer(acc_server);
-
-        if (is_online) {
-            if (uil.session.isActive()) {
-                uil.session.upload(key, json);
-            }
-            else {
-                saveOnDataServer(key, server, json);
-            }
-        }
-        else {
-            // show the data in prettyfied format
-            json = JSON.stringify(JSON.parse(json), null, 4);
-            // clear the body
-            document.body.innerHTML= '';
-            // Add preformatted json content.
-            let pre_element = document.createElement("pre");
-            pre_element.innerText = json;
-            document.body.append(pre_element);
-        }
-    }
-
-
-    /**
-     * Figures out which server we should be talking to
-     */
-    context.resolveServer = function(acc_server = undefined) {
-        if (typeof(acc_server) === "undefined") {
-            acc_server = _acc_server;
-        }
-
+    if (is_online) {
+        let server = "";
         if (!acc_server)
-            return DATA_STORE_PRODUCTION_SERVER;
+            server = DATA_STORE_PRODUCTION_SERVER;
         else
-            return DATA_STORE_ACCEPTATION_SERVER;
+            server = DATA_STORE_ACCEPTATION_SERVER;
+
+        let getDatastoreMetadataResolve = function(data) {
+            let state = data['state'];
+            if (state !== "Open" && state !== "Piloting") {
+                window.location = stop_page;
+            }
+        }
+        let getDatastoreMetadataReject = function (error) {
+            window.location = error_page;
+        }
+
+        getDatastoreMetadata(key, server).then(
+            getDatastoreMetadataResolve,
+            getDatastoreMetadataReject
+        );
+    }
+}
+
+/**
+ * Saves data to the uilots data server or displays the data.
+ *
+ * Saves data to the uilots data server or displays the data
+ * in the browser window. When the experiment is hosted via an http(s)://
+ * server the data will be send to the data server, otherwise this function
+ * assumes that you are testing your experiment on your own pc via
+ * the file protocol.
+ *
+ * @param {string} access_key, the key obtain from the datastore server.
+ *                 Optional if key is set using setAccessKey
+ * @param {bool}   acc_server, true if the data should be stored at the
+ *                 "acceptation server" for testing purposes. This parameter
+ *                 is only usefull when running the experiment online
+ * @memberof uil
+ * @deprecated use uil.saveJson() instead.
+ */
+function saveData (access_key, acc_server = undefined) {
+
+    if (_access_key) {
+        access_key = _access_key;
+    }
+    else {
+        access_key = uil.setAccessKey(access_key);
     }
 
-    /**
-     * Returns true if this device is a smartphone
-     *
-     * NOTE: Some android tablets will also be seen as a smartphone!
-     * @deprecated Use uil.browser.isMobile instead
-     * @returns {boolean}
-     */
-    context.isMobile = function () {
-        console.warn("uil.isMobile is deprecated. Use uil.browser.isMobile instead");
-        return context.browser.isMobile();
-    };
-
-    /**
-     * Returns true if this device is a tablet or a smartphone
-     * @deprecated Use uil.browser.isMobileOrTablet instead
-     * @returns {boolean}
-     */
-    context.isMobileOrTablet = function () {
-        console.warn("uil.isMobileOrTablet is deprecated. Use uil.browser.isMobileOrTablet instead");
-        return context.browser.isMobileOrTablet();
-    };
-
-    /**
-     * Tries to find out if this device has touch support.
-     *
-     * Note: this isn't a check if the device is mobile. Some laptops are touch
-     * capable too!
-     *
-     * Original source:
-     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Browser_detection_using_the_user_agent
-     *
-     * Modified to only check for touch support
-     *
-     * @deprecated use uil.broswer.isTouchCapable instead
-     * @returns {boolean} True if the browser has a touch screen
-     */
-    context.isTouchCapable = function () {
-        console.warn("uil.isTouchCapable is deprecated. Use uil.browser.isTouchCapable instead");
-        return context.browser.isTouchCapable();
+    if (typeof(access_key) === "undefined") {
+        console.error("Unable to save without a valid access_key");
+        return;
     }
 
-    /* ********* file loading *********** */
+    let data = jsPsych.data.get().json();
+    let key = access_key;
+    let is_online = isOnline(getProtocol(), getHostname());
+    let server = resolveServer(acc_server);
 
-    /**
-     * Load in a separate sub-library.
-     * @param library The name of the file to load in
-     */
-    context.loadLibrary = function (library) {
-        var script = document.createElement('script');
-        script.src = SCRIPT_DIR + '/' + library;
-        // Set an ID. Used in libraries to wait till a dependency has loaded
-        script.id = library;
+    if (is_online) {
+        if (uil.session.isActive()) {
+            uil.session.upload(key, data);
+        }
+        else {
+            saveOnDataServer(key, server, data);
+        }
+    }
+    else {
+        jsPsych.data.displayData();
+    }
+}
 
-        document.head.appendChild(script);
+/**
+ * Saves a json formatted string the uilots data server or displays the data.
+ *
+ * Saves data to the uilots data server or displays the data
+ * in the browser window. When the experiment is hosted via an http(s)://
+ * server the data will be send to the data server, otherwise this function
+ * assumes that you are testing your experiment on your own pc via
+ * the file protocol and will just display the json.
+ *
+ * @param {string} json a json formatted string.
+ * @param {string} access_key, the key obtain from the datastore server.
+ *                 Optional if key is set using setAccessKey
+ * @param {bool}   acc_server, true if the data should be stored at the
+ *                 "acceptation server" for testing purposes. This parameter
+ *                 is only usefull when running the experiment online
+ * @memberof uil
+ */
+function saveJson (json, access_key, acc_server = undefined) {
+
+    if (_access_key) {
+        access_key = _access_key;
+    }
+    else {
+        access_key = setAccessKey(access_key);
     }
 
-    context.isOnline = isOnline;
+    if (typeof(access_key) === "undefined") {
+        console.error("Unable to save without a valid access_key");
+        return;
+    }
+    let key = access_key;
+    let is_online = isOnline(getProtocol(), getHostname());
+    let server = resolveServer(acc_server);
 
-    function loadAllLibraries() {
-        PRIVATE_LIBRARIES.forEach(library => context.loadLibrary(library));
-        LIBRARIES.forEach(library => context.loadLibrary(library));
+    if (is_online) {
+        if (uil.session.isActive()) {
+            uil.session.upload(key, json);
+        }
+        else {
+            saveOnDataServer(key, server, json);
+        }
+    }
+    else {
+        // show the data in prettyfied format
+        json = JSON.stringify(JSON.parse(json), null, 4);
+        // clear the body
+        document.body.innerHTML= '';
+        // Add preformatted json content.
+        let pre_element = document.createElement("pre");
+        pre_element.innerText = json;
+        document.body.append(pre_element);
+    }
+}
+
+
+/**
+ * Figures out which server we should be talking to
+ */
+function resolveServer (acc_server = undefined) {
+    if (typeof(acc_server) === "undefined") {
+        acc_server = _acc_server;
     }
 
-    // Load in all libraries
-    loadAllLibraries();
-
-})(uil);
+    if (!acc_server)
+        return DATA_STORE_PRODUCTION_SERVER;
+    else
+        return DATA_STORE_ACCEPTATION_SERVER;
+}
