@@ -1,5 +1,5 @@
 
-import {isOnline} from "./jspsych-uil-utils.js";
+import {isOnline} from "./libs/env.mjs";
 
 const ERR_DIALOG_ID = 'uil_error_dialog';
 

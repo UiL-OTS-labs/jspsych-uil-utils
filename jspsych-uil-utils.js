@@ -21,6 +21,7 @@ import * as error from "./jspsych-uil-error.js"
 import * as browser from "./jspsych-uil-browser.js"
 import * as randomization from "./jspsych-uil-randomization.js"
 import * as session from "./jspsych-uil-session.js"
+import {isOnline, getWindow} from './libs/env.mjs';
 
 export {
     error,
@@ -39,20 +40,6 @@ export {
     resolveServer
 }
 
-// set up a proxy object for the browser's window, so that it is possible
-// to later override it with mocks when testing
-function initWindowProxy() {
-    Object.defineProperty(window,
-        '$window',
-        {
-            configurable: true,
-            get() {
-                return window;
-            }
-        });
-}
-
-initWindowProxy();
 
 
 /* ********* constants *********** */
@@ -89,29 +76,6 @@ let _datastore_metadata = undefined;
 
 /* ************ private functions ************* */
 
-function getHostname() {
-    if (typeof $window === 'undefined') {
-        initWindowProxy();
-    }
-    return $window.location.hostname;
-}
-
-function getProtocol() {
-    if (typeof $window === 'undefined') {
-        initWindowProxy();
-    }
-    return $window.location.protocol;
-}
-
-
-function isOnline(
-    protocol = getProtocol(),
-    hostname = getHostname()
-) {
-    let prot_online = protocol === "http:" || protocol === "https:";
-    let host_online = hostname !== "localhost" && hostname !== "127.0.0.1" ;
-    return prot_online && host_online;
-}
 
 /**
  * saves the data obtained from jsPsych on the webserver.
@@ -214,7 +178,7 @@ function validateAccessKey(access_key) {
         access_key = _access_key;
     }
 
-    let is_online = isOnline(getProtocol(), getHostname());
+    let is_online = isOnline();
 
     if (!isUUIDFormat(access_key)) {
         let message =
@@ -318,7 +282,7 @@ function stopIfExperimentClosed (
         acc_server = _acc_server;
     }
 
-    let is_online = isOnline(getProtocol(), getHostname());
+    let is_online = isOnline();
     let key = access_key;
 
     if (is_online) {
@@ -331,11 +295,11 @@ function stopIfExperimentClosed (
         let getDatastoreMetadataResolve = function(data) {
             let state = data['state'];
             if (state !== "Open" && state !== "Piloting") {
-                $window.location = stop_page;
+                getWindow().location = stop_page;
             }
         }
         let getDatastoreMetadataReject = function (error) {
-            $window.location = error_page;
+            getWindow().location = error_page;
         }
 
         getDatastoreMetadata(key, server).then(
@@ -378,7 +342,7 @@ function saveData (access_key, acc_server = undefined) {
 
     let data = jsPsych.data.get().json();
     let key = access_key;
-    let is_online = isOnline(getProtocol(), getHostname());
+    let is_online = isOnline();
     let server = resolveServer(acc_server);
 
     if (is_online) {
@@ -425,7 +389,7 @@ function saveJson (json, access_key, acc_server = undefined) {
         return;
     }
     let key = access_key;
-    let is_online = isOnline(getProtocol(), getHostname());
+    let is_online = isOnline();
     let server = resolveServer(acc_server);
 
     if (is_online) {

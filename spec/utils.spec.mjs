@@ -3,36 +3,6 @@ import {withFakePromise} from "./support/fake-promise.mjs";
 import {reimport} from "./support/reimport.mjs";
 
 
-describe('online/offline detection', () => {
-    let utils;
-    beforeEach(async () => { utils = await reimport('../jspsych-uil-utils.js'); });
-
-    it('should be online', () => {
-        spyOnProperty(window, '$window').and.returnValue(
-            {location: {protocol:'https:', hostname:'uu.nl'}});
-        expect(utils.isOnline()).toBeTrue();
-    });
-
-    it('should be offline for file://', () => {
-        spyOnProperty(window, '$window').and.returnValue(
-            {location: {protocol:'file://', hostname:'uu.nl'}});
-        expect(utils.isOnline()).toBeFalse();
-    });
-
-    it('should be offline for localhost', () => {
-        spyOnProperty(window, '$window').and.returnValue(
-            {location: {protocol:'http://', hostname:'localhost'}});
-        expect(utils.isOnline()).toBeFalse();
-    });
-
-    it('should be offline for 127.0.0.1', () => {
-        spyOnProperty(window, '$window').and.returnValue(
-            {location: {protocol:'http://', hostname:'127.0.0.1'}});
-        expect(utils.isOnline()).toBeFalse();
-    });
-
-});
-
 describe('experiment metadata', () => {
     let utils;
     beforeEach(async () => { utils = await reimport('../jspsych-uil-utils.js'); });
