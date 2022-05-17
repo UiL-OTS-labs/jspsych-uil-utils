@@ -52,7 +52,7 @@ describe('session api', () => {
 
     });
 
-    it('repots inactive session when not started', () => {
+    it('reports inactive session when not started', () => {
         expect(session.isActive()).toBeFalse();
     });
 
