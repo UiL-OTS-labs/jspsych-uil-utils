@@ -8,7 +8,6 @@ describe('browser info', () => {
     });
 
     it('should be correct for headless chrome', () => {
-        expect(info.browser).toContain('Chrome Headless');
         expect(info.isMobile).toBeFalse();
         expect(info.isTablet).toBeFalse();
         expect(info.isTouchCapable).toBeFalse();
