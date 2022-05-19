@@ -1,17 +1,17 @@
 /*
  * one line to give the program's name and an idea of what it does.
  * Copyright (C) 2020  Maarten Duijndam
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -21,6 +21,7 @@ import * as error from "./jspsych-uil-error.js"
 import * as browser from "./jspsych-uil-browser.js"
 import * as randomization from "./jspsych-uil-randomization.js"
 import * as session from "./jspsych-uil-session.js"
+import {isOnline, getWindow} from './libs/env.mjs';
 
 export {
     error,
@@ -38,6 +39,7 @@ export {
     saveJson,
     resolveServer
 }
+
 
 
 /* ********* constants *********** */
@@ -74,27 +76,6 @@ let _datastore_metadata = undefined;
 
 /* ************ private functions ************* */
 
-function getHostname() {
-    return window.location.hostname;
-}
-
-function getProtocol() {
-    return window.location.protocol;
-}
-
-function isFileProtocol(protocol) {
-    return protocol === "file:";
-}
-
-
-function isOnline(
-    protocol = getHostname(),
-    hostname = getProtocol()
-) {
-    let prot_online = protocol === "http:" || protocol === "https:";
-    let host_online = hostname !== "localhost" && hostname !== "127.0.0.1" ;
-    return prot_online && host_online;
-}
 
 /**
  * saves the data obtained from jsPsych on the webserver.
@@ -197,7 +178,7 @@ function validateAccessKey(access_key) {
         access_key = _access_key;
     }
 
-    let is_online = isOnline(getProtocol(), getHostname());
+    let is_online = isOnline();
 
     if (!isUUIDFormat(access_key)) {
         let message =
@@ -294,14 +275,14 @@ function stopIfExperimentClosed (
         access_key = _access_key;
     }
     else {
-        access_key = uil.setAccessKey(access_key);
+        access_key = setAccessKey(access_key);
     }
 
     if (typeof(acc_server) === "undefined") {
         acc_server = _acc_server;
     }
 
-    let is_online = isOnline(getProtocol(), getHostname());
+    let is_online = isOnline();
     let key = access_key;
 
     if (is_online) {
@@ -314,11 +295,11 @@ function stopIfExperimentClosed (
         let getDatastoreMetadataResolve = function(data) {
             let state = data['state'];
             if (state !== "Open" && state !== "Piloting") {
-                window.location = stop_page;
+                getWindow().location = stop_page;
             }
         }
         let getDatastoreMetadataReject = function (error) {
-            window.location = error_page;
+            getWindow().location = error_page;
         }
 
         getDatastoreMetadata(key, server).then(
@@ -343,7 +324,7 @@ function stopIfExperimentClosed (
  *                 "acceptation server" for testing purposes. This parameter
  *                 is only usefull when running the experiment online
  * @memberof uil
- * @deprecated use uil.saveJson() instead.
+ * @deprecated use saveJson() instead.
  */
 function saveData (access_key, acc_server = undefined) {
 
@@ -351,7 +332,7 @@ function saveData (access_key, acc_server = undefined) {
         access_key = _access_key;
     }
     else {
-        access_key = uil.setAccessKey(access_key);
+        access_key = setAccessKey(access_key);
     }
 
     if (typeof(access_key) === "undefined") {
@@ -361,12 +342,12 @@ function saveData (access_key, acc_server = undefined) {
 
     let data = jsPsych.data.get().json();
     let key = access_key;
-    let is_online = isOnline(getProtocol(), getHostname());
+    let is_online = isOnline();
     let server = resolveServer(acc_server);
 
     if (is_online) {
-        if (uil.session.isActive()) {
-            uil.session.upload(key, data);
+        if (session.isActive()) {
+            session.upload(key, data);
         }
         else {
             saveOnDataServer(key, server, data);
@@ -408,12 +389,12 @@ function saveJson (json, access_key, acc_server = undefined) {
         return;
     }
     let key = access_key;
-    let is_online = isOnline(getProtocol(), getHostname());
+    let is_online = isOnline();
     let server = resolveServer(acc_server);
 
     if (is_online) {
-        if (uil.session.isActive()) {
-            uil.session.upload(key, json);
+        if (session.isActive()) {
+            session.upload(key, json);
         }
         else {
             saveOnDataServer(key, server, json);
