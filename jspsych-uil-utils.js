@@ -21,6 +21,7 @@ import * as error from "./jspsych-uil-error.js"
 import * as browser from "./jspsych-uil-browser.js"
 import * as randomization from "./jspsych-uil-randomization.js"
 import * as session from "./jspsych-uil-session.js"
+import * as focus from "./jspsych-uil-focus.js"
 import {isOnline, getWindow} from './libs/env.mjs';
 
 export {
@@ -28,6 +29,7 @@ export {
     browser,
     randomization,
     session,
+    focus,
 }
 
 export {

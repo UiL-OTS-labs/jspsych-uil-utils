@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="./jspsych-uil-utils-import.js" type="module"></script>
+    </head>
+    <body>
+        <p id="testcontent">focus stats: </p>
+        <button onclick="updateStats()">refresh</button>
+        <script>
+
+function updateStats() {
+    let json = JSON.stringify(uil.focus.getStats(), null, 4);
+    let text = `focust stats:<cr>   ${json}`;
+    text.replace('\n', '<cr>');
+    let element = window.document.getElementById("testcontent");
+    element.innerHTML = text;
+}
+
+function testFocus() {
+    uil.focus.registerUserFocus();
+    window.onfocus = updateStats;
+    window.onblur = updateStats;
+    window.onvisibilitychange = updateStats;
+    updateStats();
+}
+
+window.addEventListener (
+    'load',
+    testFocus
+);
+        </script>
+    </body>
+</html>
