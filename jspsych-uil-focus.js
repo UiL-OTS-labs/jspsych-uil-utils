@@ -64,7 +64,6 @@ class FocusStatsKeeper {
 
     constructor () {
         
-        // For now we assume we have focus on construction
         if (window.document.hasFocus()) {
             this.has_focus = true;
             this.num_focus_captured = 1;
