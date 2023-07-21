@@ -1,42 +1,55 @@
-var jsPluginName = (function (jspsych) {
-  "use strict";
 
-  const info = {
-    name: "PLUGIN-NAME",
-    parameters: {
-      parameter_name: {
-        type: jspsych.ParameterType.INT,
-        default: undefined,
-      },
-      parameter_name2: {
-        type: jspsych.ParameterType.IMAGE,
-        default: undefined,
-      },
-    },
-  };
+import * as focus from '../jspsych-uil-focus.js' ;
 
-  /**
-   * **PLUGIN-NAME**
-   *
-   * SHORT PLUGIN DESCRIPTION
-   *
-   * @author YOUR NAME
-   * @see {@link https://DOCUMENTATION_URL DOCUMENTATION LINK TEXT}
-   */
-  class PluginNamePlugin {
-    constructor(jsPsych) {
-      this.jsPsych = jsPsych;
+var ilsFocus = (function (jspsych) {
+    "use strict";
+
+    const info = {
+        name: "IlsFocusPlugin",
+        parameters: {
+            clear : {
+                type: jspsych.ParameterType.BOOLEAN,
+                default: false,
+            },
+        },
+    };
+
+    /**
+     * **Ils focus plugin**
+     *
+     * A plugin to run as trial that extracts how much time the
+     * participant spends in the browser and browser tab. This might
+     * prove a useful measure to how well a participant attended the task
+     * versus other tasks.
+     *
+     * @author Maarten Duijndam
+     */
+    class IlsFocusPlugin {
+        constructor(jsPsych) {
+            this.jsPsych = jsPsych;
+        }
+
+        trial(display_element, trial) {
+
+            focus.registerUserFocus(); // make sure it is active.
+
+            console.assert(typeof trial.clear === 'boolean');
+
+            // data saving
+            var trial_data = {
+                focus_stats : focus.getStats(),
+            };
+
+            if (trial.clear === true) {
+                focus.clearUserFocus();
+                focus.registerUserFocus(); // Re enable it.
+            }
+
+            // end trial
+            this.jsPsych.finishTrial(trial_data);
+        }
     }
-    trial(display_element, trial) {
-      // data saving
-      var trial_data = {
-        parameter_name: "parameter value",
-      };
-      // end trial
-      this.jsPsych.finishTrial(trial_data);
-    }
-  }
-  PluginNamePlugin.info = info;
+    IlsFocusPlugin.info = info;
 
-  return PluginNamePlugin;
+    return IlsFocusPlugin;
 })(jsPsychModule);
