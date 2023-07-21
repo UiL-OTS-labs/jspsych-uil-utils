@@ -230,9 +230,9 @@ class FocusManager {
 
 
     removeEventListeners() {
-        window.removeEventListeners(FOCUS, this.onFocusCaptured);
-        window.removeEventListeners(BLUR, this.onFocusLost);
-        window.removeEventListeners(VISIBILITYCHANGE, this.onVisibilityChange);
+        window.removeEventListener(FOCUS, this.onFocusCaptured);
+        window.removeEventListener(BLUR, this.onFocusLost);
+        window.removeEventListener(VISIBILITYCHANGE, this.onVisibilityChange);
     }
 
     getStats() {
