@@ -1,7 +1,5 @@
-
-import * as focus from '../jspsych-uil-focus.js' ;
-
-var ilsFocus = (function (jspsych) {
+// import * as focus from ../jspsych-uil-focus.js
+var IlsFocusPlugin = (function (jspsych) {
     "use strict";
 
     const info = {
@@ -31,18 +29,18 @@ var ilsFocus = (function (jspsych) {
 
         trial(display_element, trial) {
 
-            focus.registerUserFocus(); // make sure it is active.
+            uil.focus.registerUserFocus(); // make sure it is active.
 
             console.assert(typeof trial.clear === 'boolean');
 
             // data saving
             var trial_data = {
-                focus_stats : focus.getStats(),
+                focus_stats : uil.focus.getStats(),
             };
 
             if (trial.clear === true) {
-                focus.clearUserFocus();
-                focus.registerUserFocus(); // Re enable it.
+                uil.focus.clearUserFocus();
+                uil.focus.registerUserFocus(); // Re enable it.
             }
 
             // end trial

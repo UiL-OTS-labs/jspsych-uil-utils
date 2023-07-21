@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <title>user focus example</title>
+        <script src="https://web-experiments.lab.hum.uu.nl/jspsych/7.3.3/jspsych.js"></script>
+        <script src="https://web-experiments.lab.hum.uu.nl/jspsych/7.3.3/plugin-html-keyboard-response.js"></script>
+        <link href="https://web-experiments.lab.hum.uu.nl/jspsych/7.3.3/jspsych.css" rel="stylesheet" type="text/css"/>
+        
+        <script src="plugin-focus.js"></script>
+
+        <script src="../jspsych-uil-utils-import.js" type="module"></script>
+    </head>
+    <body>
+        <script>
+
+let jsPsych = initJsPsych(
+    {
+        on_finish: function() {
+            uil.saveData("00000000-0000-0000-0000-000000000000");
+        },
+    }
+);
+
+function main() {
+    let timeline = []
+    let focus_no_clear = {
+        type : IlsFocusPlugin
+    };
+    let focus_clear = {
+        type : IlsFocusPlugin,
+        clear : true
+    };
+
+    timeline.push(focus_no_clear)
+    timeline.push(
+        {
+            type : jsPsychHtmlKeyboardResponse,
+            stimulus : "<H1>Focus is recorded</H1>" +
+                       "<p>Change tabs or focus the window on something else " +
+                       "to see something useful</p>"
+        }
+    );
+    timeline.push(focus_no_clear);
+    timeline.push (
+        {
+            type : jsPsychHtmlKeyboardResponse,
+            stimulus : "<H1>Focus is still recorded</H1>" +
+            "<p>Focus is cumulative with cumulative results from last</p>"
+        }
+    );
+    timeline.push(focus_clear);
+    timeline.push (
+        {
+            type : jsPsychHtmlKeyboardResponse,
+            stimulus : "<H1>Focus is still recorded</H1>" +
+            "<p>However, this part has fresh statisticas as previously "+
+            "The results were cleared</p>"
+        }
+    );
+    // as this is the end of the experiment, it doesn't matter whether to
+    // clear the statistics
+    timeline.push(focus_no_clear);
+    
+    jsPsych.run(timeline);
+
+}
+
+window.addEventListener (
+    'load',
+    main
+);
+        </script>
+    </body>
+</html>
