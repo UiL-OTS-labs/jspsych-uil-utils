@@ -316,24 +316,19 @@ function isTouchCapable () {
  * back to a specific link.
  *
  * let params = { a: "a", b: 1};
- * redirect("http://www.some-surver.some.domain", params)
- * would redirect to: http://www.some-surver.some.domain?a=a&b=1
+ * redirect("http://www.some-surfer.some.domain", params)
+ * would redirect to: http://www.some-surfer.some.domain?a=a&b=1
  */
 function redirect(new_url, qs_params=null)
 {
-    let url = new_url;
-    if (qs_params != null && Object.keys(qs_params).length > 0) {
-        let qs = "?"
-        let keys = Object.keys(qs_params)
+    let url = new URL(new_url);
 
-        for (let i = 0; i < keys.length; i++) {
-            if (i > 0)
-                qs += "&";
-            qs += (keys[i] + "=" + String(qs_params[keys[i]]));
-        }
-        url += qs;
+    if (qs_params != null && Object.keys(qs_params).length > 0) {
+        let params = new URLSearchParams(qs_params);
+        url.search = params.toString();
     }
-    location.href = url;
+
+    location.href = url.toString();
 }
 
 function _reject(predicate, location) {
