@@ -38,7 +38,7 @@ prime boiler plate :
         <link href="https://web-experiments.lab.hum.uu.nl/jspsych/6.1.0/css/jspsych.css" rel="stylesheet" type="text/css"/>
 
         <!-- Uil OTS libraries -->
-        <script src="https://web-experiments.lab.hum.uu.nl/jspsych-uil-utils/jspsych-uil-utils.js"></script>
+        <script src="https://web-experiments.lab.hum.uu.nl/jspsych-uil-utils/0.3/jspsych-uil-utils-import.js"></script>
 
         <!-- Uil OTS scripts -->
         <script src="stimuli.js"></script>
