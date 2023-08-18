@@ -2,7 +2,7 @@ import {reimport} from "../support/reimport.mjs";
 
 describe('online/offline detection', () => {
     let env;
-    beforeEach(async () => { env = await reimport('../libs/env.mjs'); });
+    beforeEach(async () => { env = await reimport('../libs/env.js'); });
 
     it('should be online', () => {
         spyOnProperty(window, '$window').and.returnValue(

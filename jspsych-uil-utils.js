@@ -22,7 +22,7 @@ import * as browser from "./jspsych-uil-browser.js"
 import * as randomization from "./jspsych-uil-randomization.js"
 import * as session from "./jspsych-uil-session.js"
 import * as focus from "./jspsych-uil-focus.js"
-import {isOnline, getWindow} from './libs/env.mjs';
+import {isOnline, getWindow} from './libs/env.js';
 
 export {
     error,
