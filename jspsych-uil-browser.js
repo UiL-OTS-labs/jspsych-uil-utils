@@ -30,6 +30,7 @@ export {
     isTablet,
     isMobileOrTablet,
     isTouchCapable,
+    redirect,
     rejectMobile,
     rejectMobileOrTablet
 };
@@ -299,6 +300,36 @@ function isTouchCapable () {
 
     return has_touchscreen
 };
+
+
+/**
+ * Redirects participant to a new url.
+ * @param {string} new_url - The url where you would like to upload the
+ *                           participant to
+ * @param {object} qs_params - An object containing query string parameters
+ *
+ * This function is designed to redirect a participant to a new url and
+ * forward the query string parameters. This function is added because,
+ * sometimes it is nice to split an experiment into parts. E.g when
+ * sub parts of the experiments require versions of e.g. jsPsych. Additionally,
+ * online platforms such as Prolific might require a participant to be send
+ * back to a specific link.
+ *
+ * let params = { a: "a", b: 1};
+ * redirect("http://www.some-surfer.some.domain", params)
+ * would redirect to: http://www.some-surfer.some.domain?a=a&b=1
+ */
+function redirect(new_url, qs_params=null)
+{
+    let url = new URL(new_url);
+
+    if (qs_params != null && Object.keys(qs_params).length > 0) {
+        let params = new URLSearchParams(qs_params);
+        url.search = params.toString();
+    }
+
+    location.href = url.toString();
+}
 
 function _reject(predicate, location) {
     if (predicate()) {
