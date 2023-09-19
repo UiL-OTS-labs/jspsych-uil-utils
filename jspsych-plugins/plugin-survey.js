@@ -51,8 +51,8 @@ let IlsSurveyPlugin = (function (jspsych) {
 		  Prompt for review screen
 		 */
 		reviewPrompt: {
-		    type: jspsych.ParameterType.STRING,
-		    default: 'Please review:',
+		    type: jspsych.ParameterType.HTML_STRING,
+		    default: '<h4>Please review:</h4>',
 		},
 		/**
 		  Label for review screen ok button
@@ -124,7 +124,7 @@ let IlsSurveyPlugin = (function (jspsych) {
 	  Display review screen
 	*/
 	showReview(display_element, trial) {
-	    display_element.innerHTML = `<h4>${trial.reviewPrompt}</h4>` +
+	    display_element.innerHTML = trial.reviewPrompt +
 		Object.entries(this.data).map(([key, value]) =>
 		    `<p><strong>${this.fieldDisplayLabel(trial, key)}</strong>: ${this.fieldDisplayValue(trial, key, value)}</p>`
 		).join('\n');
