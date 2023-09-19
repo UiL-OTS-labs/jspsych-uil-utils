@@ -80,11 +80,14 @@ let IlsSurveyPlugin = (function (jspsych) {
 	    this.showForm(display_element, trial);
 	}
 
-	showForm(display_element, trial) {
+	showForm(display_element, trial, initial = {}) {
 	    let form = document.createElement('form');
 	    form.innerHTML = trial.html;
 	    display_element.innerHTML = '';
 	    display_element.append(form);
+            Object.entries(initial).forEach(([key, value]) => {
+                form[key].value = value;
+            });
 
 	    form.addEventListener('submit', (event) => {
 		event.preventDefault();
@@ -140,8 +143,8 @@ let IlsSurveyPlugin = (function (jspsych) {
 	    cancel.style.margin = '10px';
 
 	    ok.addEventListener('click', () => this.beforeFinish(display_element, trial));
-	    // clicking cancel will trigger the form again
-	    cancel.addEventListener('click', () => this.showForm(display_element, trial));
+	    // clicking cancel will trigger the form again (while populating fields from this.data)
+	    cancel.addEventListener('click', () => this.showForm(display_element, trial, this.data));
 
 	    display_element.append(ok);
 	    display_element.append(cancel);
