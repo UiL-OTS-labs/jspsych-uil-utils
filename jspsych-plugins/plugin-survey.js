@@ -80,11 +80,64 @@ let IlsSurveyPlugin = (function (jspsych) {
             this.showForm(display_element, trial);
         }
 
+        injectStyle(display_element) {
+            display_element.classList.add('ils');
+            let style = document.createElement('style');
+            style.innerHTML += `
+                .ils {
+                    .info {
+                        display: none;
+                        font-size: .8em;
+                        width: 30%;
+                    }
+                    .info-toggle {
+                        cursor: pointer;
+                    }
+                    .info-toggle.clicked + .info {
+                        &:before {
+                            content: '';
+                            border-bottom: 8px solid transparent;
+                            border-right: 8px solid #eee;
+                            border-top:  8px solid transparent;
+                            border-left: 8px solid transparent;
+                            width: 0;
+                            height: 0;
+                            margin-left: -24px;
+                            margin-top: -4px;
+                            display: block;
+                            background: none;
+                            position: absolute;
+                        }
+                        display: inline;
+                        position: absolute;
+                        padding: 10px;
+                        margin-left: 10px;
+                        background: #eee;
+                        border-radius: 10px;
+                    }
+                }
+            `;
+
+            display_element.append(style);
+            display_element.querySelectorAll('.info-toggle').forEach(
+                toggle => toggle.addEventListener('click', event => {
+                    event.stopPropagation();
+                    toggle.classList.toggle('clicked')
+                })
+            );
+
+            document.body.addEventListener('click', () => {
+                display_element.querySelectorAll('.info-toggle.clicked').forEach(
+                    toggle => toggle.classList.remove('clicked'));
+            });
+        }
+
         showForm(display_element, trial, initial = {}) {
             let form = document.createElement('form');
             form.innerHTML = trial.html;
             display_element.innerHTML = '';
             display_element.append(form);
+            this.injectStyle(display_element);
 
             Object.entries(initial).forEach(([key, value]) => {
                 form[key].value = value;
