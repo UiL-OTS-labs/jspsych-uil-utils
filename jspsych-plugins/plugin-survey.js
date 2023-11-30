@@ -148,6 +148,9 @@ let IlsSurveyPlugin = (function (jspsych) {
                 // collect form data into this.data
                 // only entries defined in `fields` parameter will be collected
                 Object.keys(trial.fields).forEach(key => {
+		    if (!(key in form)) {
+			throw new Error(`Missing value for field ${key}`);
+		    }
                     this.data[key] = form[key].value;
                 });
 
