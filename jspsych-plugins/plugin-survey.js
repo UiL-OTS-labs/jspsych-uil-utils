@@ -126,6 +126,9 @@ let IlsSurveyPlugin = (function (jspsych) {
             display_element.querySelectorAll('.info-toggle').forEach(
                 toggle => toggle.addEventListener('click', event => {
                     event.stopPropagation();
+		    // hide any other tooltip that might be open
+		    display_element.querySelectorAll('.info-toggle.clicked').forEach(
+			toggle => toggle.classList.remove('clicked'));
                     toggle.classList.toggle('clicked')
                 })
             );
