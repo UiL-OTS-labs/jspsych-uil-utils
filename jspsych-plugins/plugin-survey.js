@@ -92,6 +92,10 @@ let IlsSurveyPlugin = (function (jspsych) {
                     }
                     .info-toggle {
                         cursor: pointer;
+			width: 20px;
+			height: 20px;
+			display: inline-block;
+			background: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTguNDMzIiBoZWlnaHQ9IjE4LjQzMyIgdmlld0JveD0iMCAwIDUgNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiPjxjaXJjbGUgY3g9IjIuNDM4NSIgY3k9IjIuNDM4NSIgcj0iMi4xNzQiIHN0cm9rZS13aWR0aD0iLjUyOTIiLz48cGF0aCBkPSJNMi40Mzg1IDMuNzkzVjIuMDI3NE0yLjQzODUgMS41NDI2di0uNDMzMSIgc3Ryb2tlLXdpZHRoPSIuNDc2MyIvPjwvZz48L3N2Zz4K") no-repeat;
                     }
                     .info-toggle.clicked + .info {
                         &:before {
