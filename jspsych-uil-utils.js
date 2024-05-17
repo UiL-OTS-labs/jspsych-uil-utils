@@ -405,12 +405,13 @@ function saveJson (json, access_key, acc_server = undefined) {
     else {
         // show the data in prettyfied format
         json = JSON.stringify(JSON.parse(json), null, 4);
-        // clear the body
-        document.body.innerHTML= '';
         // Add preformatted json content.
         let pre_element = document.createElement("pre");
         pre_element.innerText = json;
-        document.body.append(pre_element);
+
+        let content = `<!doctype html><html><body><h1>Experiment Data (debug version)</h1>${pre_element.outerHTML}</body></html>`;
+        let url = URL.createObjectURL(new Blob([content], {type: 'text/html;charset=utf-8'}));
+        window.open(url);
     }
 }
 
