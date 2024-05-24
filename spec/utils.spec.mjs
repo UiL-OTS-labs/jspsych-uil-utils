@@ -63,12 +63,15 @@ describe('saveJson', () => {
         expect(request.params).toBe(JSON.stringify(data));
     });
 
-    it('should display json when offline', () => {
-        let mockBody = document.createElement('body');
-        spyOnProperty(document, 'body').and.returnValue(mockBody);
+    it('should display json when offline', async () => {
+        let open = spyOn(window, 'open');
+
         utils.saveJson(JSON.stringify(data), key);
 
-        let parsed = JSON.parse(mockBody.innerText);
+        expect(open).toHaveBeenCalled();
+        let blob = await fetch(open.calls.first().args[0], {headers: {'content-type': 'text/html;charset=utf-8'}});
+        let dom = new DOMParser().parseFromString(await blob.text(), 'text/html');
+        let parsed = JSON.parse(dom.querySelector('pre').innerText);
         expect(parsed).toEqual(data);
     });
 });
