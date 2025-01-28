@@ -18,16 +18,44 @@ class API {
      * @returns {Promise<Object>} a promise that contains the parsed JSON returned from the server
      */
     _request(url, method, data) {
+        let retries = 5;
+        let sleep = 500;
         let params = {
             method: method,
         };
         if (typeof(data) !== 'undefined') {
             params.body = new Blob([data], {type: 'text/plain'});
         }
-        return new Promise((resolve, reject) => {
-            fetch(this.host + url, params).then((response) => {
-                response.json().then(resolve).catch(reject);
-            }).catch(reject);
+        return new Promise(async (resolve, reject) => {
+            while (true) {
+                let response;
+                try {
+                    response = await fetch(this.host + url, params);
+                }
+                catch (error) {
+                    if (retries-- > 0) {
+                        // sleep for a bit
+                        await (new Promise(r => setTimeout(r, sleep)));
+                        sleep *= 2;
+                        continue;
+                    }
+                    reject(error);
+                    return;
+                }
+
+                if (response.ok) {
+                    resolve(await response.json());
+                }
+                else {
+                    try {
+                        reject(await response.json());
+                    }
+                    catch {
+                        reject(await response.text());
+                    }
+                }
+                return;
+            }
         });
     }
 
