@@ -23,6 +23,7 @@ import * as randomization from "./jspsych-uil-randomization.js"
 import * as session from "./jspsych-uil-session.js"
 import * as focus from "./jspsych-uil-focus.js"
 import {isOnline, getWindow} from './libs/env.js';
+import {API} from "./libs/api.js";
 
 export {
     error,
@@ -87,23 +88,16 @@ let _datastore_metadata = undefined;
  * @param {string} server the server to which the data should be posted.
  * @param {string} data the research data to send to the datastorage server.
  */
-function saveOnDataServer(access_key, server, data) {
+async function saveOnDataServer(access_key, server, data) {
+    let api = new API(resolveServer());
 
-    var xhr = new XMLHttpRequest();
-    xhr.open(POST, server + access_key + DATA_UPLOAD_ENDPOINT);
-
-    // Don't change, server only accepts plain text
-    xhr.setRequestHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_PLAIN);
-    xhr.onload = function() {
-        if(xhr.status === 200){
-            console.log("Upload status = 200 " + xhr.response);
-        }
-        else {
-            console.error("Error while uploading status = " + xhr.status);
-            console.error("Response = " + xhr.response);
-        }
-    };
-    xhr.send(data);
+    try {
+        let response = await api._post(access_key + DATA_UPLOAD_ENDPOINT, data);
+        console.log("Upload status = 200 ", response);
+    }
+    catch (error) {
+        console.error("Error while uploading status", error);
+    }
 }
 
 /**
