@@ -80,6 +80,24 @@ let _datastore_metadata = undefined;
 /* ************ private functions ************* */
 
 
+function handleUploadError(args) {
+    document.body.innerHTML = `
+<div style="margin: 20px">
+<h1>Upload Error</h1>
+<p>An error was encountered while trying to upload the data from your session.</p>
+
+<p>This could happen because your connection is down, or because of the server is unavailable.</p>
+<p>Please keep this window open to prevent your data from being lost.</p>
+<p>You can <a id="retry" href="#">click here to try again</a>.</p>
+</div>
+    `;
+
+    document.querySelector('#retry').addEventListener('click', () => {
+        document.body.innerHTML = '<div style="margin: 20px">Retrying upload...</div>';
+        saveOnDataServer(args.access_key, args.server, args.data);
+    });
+}
+
 /**
  * saves the data obtained from jsPsych on the webserver.
  *
@@ -95,8 +113,9 @@ async function saveOnDataServer(access_key, server, data) {
         let response = await api._post(access_key + DATA_UPLOAD_ENDPOINT, data);
         console.log("Upload status = 200 ", response);
     }
-    catch (error) {
-        console.error("Error while uploading status", error);
+    catch (err) {
+        console.error("Error while uploading status", err);
+        handleUploadError({access_key, server, data});
     }
 }
 
