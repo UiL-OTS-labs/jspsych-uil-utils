@@ -27,34 +27,35 @@ class API {
             params.body = new Blob([data], {type: 'text/plain'});
         }
         return new Promise(async (resolve, reject) => {
-            while (true) {
-                let response;
+            let response = null;
+            for(let i = 0; i < retries; i++) {
                 try {
                     response = await fetch(this.host + url, params);
+                    break;
                 }
                 catch (error) {
-                    if (retries-- > 0) {
-                        // sleep for a bit
-                        await (new Promise(r => setTimeout(r, sleep)));
-                        sleep *= 2;
-                        continue;
-                    }
-                    reject(error);
-                    return;
+                    // sleep for a bit
+                    await (new Promise(r => setTimeout(r, sleep)));
+                    sleep *= 2;
                 }
+            }
 
-                if (response.ok) {
-                    resolve(await response.json());
-                }
-                else {
-                    try {
-                        reject(await response.json());
-                    }
-                    catch {
-                        reject(await response.text());
-                    }
-                }
+            if (response == null) {
+                // out of retries
+                reject(error);
                 return;
+            }
+
+            if (response.ok) {
+                resolve(await response.json());
+            }
+            else {
+                try {
+                    reject(await response.json());
+                }
+                catch {
+                    reject(await response.text());
+                }
             }
         });
     }
