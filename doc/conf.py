@@ -13,7 +13,11 @@ author = "Ilslab"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["sphinx_js"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx_js",
+]
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
@@ -25,14 +29,14 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 html_theme = "alabaster"
 html_static_path = ["_static"]
 
-# -- To configure stuff for JSDoc -------------------------------------------------
+# # -- To configure stuff for JSDoc -------------------------------------------------
 
 # setup path to javascript source
 js_source_path = "../"
 
-# We might need to uncomment the following for typescript (when necessary)
-# js_language = 'typescript'
+# # We might need to uncomment the following for typescript (when necessary)
+# # js_language = 'typescript'
 
-# As the utils is primarily a javascript library we use "js" as default domain
-# this would remain the same when using typescript
-primary_domain = "js"
+# # As the utils is primarily a javascript library we use "js" as default domain
+# # this would remain the same when using typescript
+# primary_domain = "js"
