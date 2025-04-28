@@ -32,3 +32,7 @@ js_source_path = "../"
 
 # We might need to uncomment the following for typescript (when necessary)
 # js_language = 'typescript'
+
+# As the utils is primarily a javascript library we use "js" as default domain
+# this would remain the same when using typescript
+primary_domain = "js"
