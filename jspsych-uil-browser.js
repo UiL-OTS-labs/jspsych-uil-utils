@@ -337,5 +337,15 @@ function _reject(predicate, location) {
     }
 }
 
+/**
+ * Rejects mobile devices, the participant is redirected to an error
+ * html page that will tell them not to run the experiment on a Mobile device.
+ */
 let rejectMobile = () => _reject(isMobile, MOBILE_ERROR_PAGE_LOCATION);
+
+/**
+ * Rejects mobile and tablet devices, the participant is redirected to an error
+ * html page that will tell them not to run the experiment on a Mobile or
+ * Tablet device.
+ */
 let rejectMobileOrTablet = () => _reject(isMobileOrTablet, MOBILE_ERROR_PAGE_LOCATION);
