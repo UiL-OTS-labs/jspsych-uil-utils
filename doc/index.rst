@@ -20,4 +20,5 @@ There is a quickstart in order to setup your experiment.
 
    usage/quickstart
    lib/uil
+   lib/browser
 
