@@ -12,6 +12,14 @@ classes in the focus module
 
 .. js:autoclass:: FocusStats
 
+   .. js:autoattribute:: FocusStats#is_active
+   .. js:autoattribute:: FocusStats#cum_active
+   .. js:autoattribute:: FocusStats#cum_inactive
+   .. js:autoattribute:: FocusStats#num_focus
+   .. js:autoattribute:: FocusStats#num_focus_lost
+   .. js:autoattribute:: FocusStats#num_shows
+   .. js:autoattribute:: FocusStats#num_hides
+
 functions in the focus module
 =============================
 .. js:autofunction:: registerUserFocus
