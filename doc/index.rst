@@ -22,4 +22,6 @@ There is a quickstart in order to setup your experiment.
    lib/uil
    lib/browser
    lib/randomization
+   lib/session
+   lib/focus
 
