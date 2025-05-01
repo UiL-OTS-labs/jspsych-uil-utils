@@ -224,7 +224,7 @@ let IlsSurveyPlugin = (function (jspsych) {
             if (exclude) {
                 // show rejection screen
                 display_element.innerHTML = trial.exclusionPrompt;
-                this.jsPsych.endExperiment();
+                this.jsPsych.endExperiment(trial.exclusionPrompt);
             }
             else {
                 // survey is complete
