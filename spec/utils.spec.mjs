@@ -50,17 +50,19 @@ describe('saveJson', () => {
     let key = '01e6506c-8538-4f83-bb3f-f7cf2ba7f63f';
     let data = {test_data:'hello'};
 
-    it('should make a request when online', () => {
+    it('should make a request when online', async () => {
         // fake online
         let win = {location: {protocol:'https:', hostname:'uu.nl'}};
         spyOnProperty(window, '$window').and.returnValue(win);
 
+        let fetch = spyOn(window, 'fetch')
+            .and.returnValue(new Promise(function() {}));
         utils.saveJson(JSON.stringify(data), key);
-        let request = jasmine.Ajax.requests.mostRecent();
-        expect(request).toBeDefined();
-        expect(request.url).toMatch(new RegExp(`/api/${key}/upload/$`));
-        expect(request.requestHeaders['Content-Type']).toBe('text/plain');
-        expect(request.params).toBe(JSON.stringify(data));
+        expect(fetch).toHaveBeenCalled();
+        let args = fetch.calls.first().args;
+        expect(args[0]).toMatch(new RegExp(`/api/${key}/upload/$`));
+        expect(args[1].body.type).toBe('text/plain');
+        expect(await args[1].body.text()).toBe(JSON.stringify(data));
     });
 
     it('should display json when offline', async () => {
