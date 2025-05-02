@@ -58,9 +58,12 @@ function start (access_key, callback) {
 }
 
 /**
- * Uploades data to the server and finalizes a session
+ * Uploads data to the server and finalizes a session
+ *
  * @param {string} access_key - Access key for the experiment
  * @param {string} data - Data to be sent to the server, in plain text
+ *
+ * @returns {Promise<Object>} a promise that contains the parsed JSON returned from the server
  */
 function upload (access_key, data) {
     let api = new API(resolveServer());
@@ -68,7 +71,7 @@ function upload (access_key, data) {
         throw new Error('No active session!');
     }
 
-    api.sessionUpload(access_key, session_id, data);
+    return api.sessionUpload(access_key, session_id, data);
 }
 
 /**

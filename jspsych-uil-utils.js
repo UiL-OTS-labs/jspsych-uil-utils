@@ -340,6 +340,11 @@ function stopIfExperimentClosed (
  *                 is only usefull when running the experiment online
  * @memberof uil
  * @deprecated use saveJson() instead.
+ *
+ * @returns {Promise| Promise<Object>} a promise that resolves when then
+ * upload is transferred. In case the saveOnDataServer path is chosen, it might also
+ * be "resolved" when the "retry" screen is displayed. When testing offline a
+ * resolved Promise is returned
  */
 function saveData (access_key, acc_server = undefined) {
 
@@ -352,7 +357,7 @@ function saveData (access_key, acc_server = undefined) {
 
     if (typeof(access_key) === "undefined") {
         console.error("Unable to save without a valid access_key");
-        return;
+        return Promise.reject(new Error("Unable to save without a valid access_key"));
     }
 
     let data = jsPsych.data.get().json();
@@ -362,14 +367,15 @@ function saveData (access_key, acc_server = undefined) {
 
     if (is_online) {
         if (session.isActive()) {
-            session.upload(key, data);
+            return session.upload(key, data);
         }
         else {
-            saveOnDataServer(key, server, data);
+            return saveOnDataServer(key, server, data);
         }
     }
     else {
         jsPsych.data.displayData();
+        return Promise.resolve();
     }
 }
 
@@ -389,6 +395,11 @@ function saveData (access_key, acc_server = undefined) {
  *                 "acceptation server" for testing purposes. This parameter
  *                 is only usefull when running the experiment online
  * @memberof uil
+ *
+ * @returns {Promise| Promise<Object>} a promise that resolves when then
+ * upload is transferred. In case the saveOnDataServer (no active session) path is 
+ * chosen, it might also be "resolved" when the "retry" screen is displayed. When 
+ * testing offline a resolved Promise is returned.
  */
 function saveJson (json, access_key, acc_server = undefined) {
 
@@ -409,10 +420,10 @@ function saveJson (json, access_key, acc_server = undefined) {
 
     if (is_online) {
         if (session.isActive()) {
-            session.upload(key, json);
+            return session.upload(key, json);
         }
         else {
-            saveOnDataServer(key, server, json);
+            return saveOnDataServer(key, server, json);
         }
     }
     else {
@@ -425,6 +436,7 @@ function saveJson (json, access_key, acc_server = undefined) {
         let content = `<!doctype html><html><body><h1>Experiment Data (debug version)</h1>${pre_element.outerHTML}</body></html>`;
         let url = URL.createObjectURL(new Blob([content], {type: 'text/html;charset=utf-8'}));
         window.open(url);
+        return Promise.resolve();
     }
 }
 
