@@ -23,6 +23,7 @@ import * as randomization from "./jspsych-uil-randomization.js"
 import * as session from "./jspsych-uil-session.js"
 import * as focus from "./jspsych-uil-focus.js"
 import {isOnline, getWindow} from './libs/env.js';
+import {API} from "./libs/api.js";
 
 export {
     error,
@@ -79,6 +80,24 @@ let _datastore_metadata = undefined;
 /* ************ private functions ************* */
 
 
+function handleUploadError(args) {
+    document.body.innerHTML = `
+<div style="margin: 20px">
+<h1>Upload Error</h1>
+<p>An error was encountered while trying to upload the data from your session.</p>
+
+<p>This could happen because your connection is down, or because of the server is unavailable.</p>
+<p>Please keep this window open to prevent your data from being lost.</p>
+<p>You can <a id="retry" href="#">click here to try again</a>.</p>
+</div>
+    `;
+
+    document.querySelector('#retry').addEventListener('click', () => {
+        document.body.innerHTML = '<div style="margin: 20px">Retrying upload...</div>';
+        saveOnDataServer(args.access_key, args.server, args.data);
+    });
+}
+
 /**
  * saves the data obtained from jsPsych on the webserver.
  *
@@ -87,23 +106,17 @@ let _datastore_metadata = undefined;
  * @param {string} server the server to which the data should be posted.
  * @param {string} data the research data to send to the datastorage server.
  */
-function saveOnDataServer(access_key, server, data) {
+async function saveOnDataServer(access_key, server, data) {
+    let api = new API(resolveServer());
 
-    var xhr = new XMLHttpRequest();
-    xhr.open(POST, server + access_key + DATA_UPLOAD_ENDPOINT);
-
-    // Don't change, server only accepts plain text
-    xhr.setRequestHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_PLAIN);
-    xhr.onload = function() {
-        if(xhr.status === 200){
-            console.log("Upload status = 200 " + xhr.response);
-        }
-        else {
-            console.error("Error while uploading status = " + xhr.status);
-            console.error("Response = " + xhr.response);
-        }
-    };
-    xhr.send(data);
+    try {
+        let response = await api._post(access_key + DATA_UPLOAD_ENDPOINT, data);
+        console.log("Upload status = 200 ", response);
+    }
+    catch (err) {
+        console.error("Error while uploading status", err);
+        handleUploadError({access_key, server, data});
+    }
 }
 
 /**
@@ -327,6 +340,11 @@ function stopIfExperimentClosed (
  *                 is only usefull when running the experiment online
  * @memberof uil
  * @deprecated use saveJson() instead.
+ *
+ * @returns {Promise| Promise<Object>} a promise that resolves when then
+ * upload is transferred. In case the saveOnDataServer path is chosen, it might also
+ * be "resolved" when the "retry" screen is displayed. When testing offline a
+ * resolved Promise is returned
  */
 function saveData (access_key, acc_server = undefined) {
 
@@ -339,7 +357,7 @@ function saveData (access_key, acc_server = undefined) {
 
     if (typeof(access_key) === "undefined") {
         console.error("Unable to save without a valid access_key");
-        return;
+        return Promise.reject(new Error("Unable to save without a valid access_key"));
     }
 
     let data = jsPsych.data.get().json();
@@ -349,14 +367,15 @@ function saveData (access_key, acc_server = undefined) {
 
     if (is_online) {
         if (session.isActive()) {
-            session.upload(key, data);
+            return session.upload(key, data);
         }
         else {
-            saveOnDataServer(key, server, data);
+            return saveOnDataServer(key, server, data);
         }
     }
     else {
         jsPsych.data.displayData();
+        return Promise.resolve();
     }
 }
 
@@ -376,6 +395,11 @@ function saveData (access_key, acc_server = undefined) {
  *                 "acceptation server" for testing purposes. This parameter
  *                 is only usefull when running the experiment online
  * @memberof uil
+ *
+ * @returns {Promise| Promise<Object>} a promise that resolves when then
+ * upload is transferred. In case the saveOnDataServer (no active session) path is 
+ * chosen, it might also be "resolved" when the "retry" screen is displayed. When 
+ * testing offline a resolved Promise is returned.
  */
 function saveJson (json, access_key, acc_server = undefined) {
 
@@ -396,10 +420,10 @@ function saveJson (json, access_key, acc_server = undefined) {
 
     if (is_online) {
         if (session.isActive()) {
-            session.upload(key, json);
+            return session.upload(key, json);
         }
         else {
-            saveOnDataServer(key, server, json);
+            return saveOnDataServer(key, server, json);
         }
     }
     else {
@@ -412,6 +436,7 @@ function saveJson (json, access_key, acc_server = undefined) {
         let content = `<!doctype html><html><body><h1>Experiment Data (debug version)</h1>${pre_element.outerHTML}</body></html>`;
         let url = URL.createObjectURL(new Blob([content], {type: 'text/html;charset=utf-8'}));
         window.open(url);
+        return Promise.resolve();
     }
 }
 
