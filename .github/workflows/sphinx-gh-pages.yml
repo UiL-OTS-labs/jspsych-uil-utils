@@ -51,8 +51,7 @@ jobs:
 
   # Deployment job
   deploy:
-    # In the future remove the develop condition
-    if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
