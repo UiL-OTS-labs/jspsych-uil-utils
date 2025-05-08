@@ -1,8 +1,11 @@
-# Based on: Sample workflow for building and deploying a Jekyll site to GitHub Pages
+---
+# Based on: Sample workflow for building and deploying a Jekyll
+# site to GitHub Pages
 name: Documentation using sphinx
 
 on:
-  # Runs on pushes and pull requests targeting the develop (at a later stage) and main branch
+  # Runs on pushes and pull requests targeting the develop
+  # (at a later stage) and main branch
   push:
     branches: ["main", "develop"]
   pull_request:
@@ -17,8 +20,9 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Allow only one concurrent deployment, skipping runs queued between the run
+# in-progress and latest queued. However, do NOT cancel in-progress runs as
+# we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -48,7 +52,7 @@ jobs:
   # Deployment job
   deploy:
     # In the future remove the develop condition
-    if: github.ref == 'refs/heads/master' or github.ref == 'refs/heads/develop'
+    if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
