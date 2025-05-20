@@ -28,13 +28,15 @@ class API {
         }
         return new Promise(async (resolve, reject) => {
             let response = null;
+            let error = null;
             for(let i = 0; i < retries; i++) {
                 try {
                     response = await fetch(this.host + url, params);
                     break;
                 }
-                catch (error) {
+                catch (e) {
                     // sleep for a bit
+                    error = e;
                     await (new Promise(r => setTimeout(r, sleep)));
                     sleep *= 2;
                 }
@@ -50,11 +52,12 @@ class API {
                 resolve(await response.json());
             }
             else {
+                let clone = response.clone();
                 try {
                     reject(await response.json());
                 }
                 catch {
-                    reject(await response.text());
+                    reject(await clone.text());
                 }
             }
         });
