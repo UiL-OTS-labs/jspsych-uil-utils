@@ -23,6 +23,7 @@ export {
     isActive,
     start,
     upload,
+    uploadBinary,
     subjectId
 };
 
@@ -72,6 +73,23 @@ function upload (access_key, data) {
     }
 
     return api.sessionUpload(access_key, session_id, data);
+}
+
+/**
+ * Uploads binary data to the server (leaves the session open)
+ *
+ * @param {string} access_key - Access key for the experiment
+ * @param {Blob} data - Data to be sent to the server
+ *
+ * @returns {Promise<void>} an empty promise
+ */
+function uploadBinary (access_key, data) {
+    let api = new API(resolveServer());
+    if (session_id === null) {
+        throw new Error('No active session!');
+    }
+
+    return api.uploadBinary(access_key, session_id, data);
 }
 
 /**

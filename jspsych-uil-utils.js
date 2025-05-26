@@ -110,7 +110,8 @@ async function saveOnDataServer(access_key, server, data) {
     let api = new API(resolveServer());
 
     try {
-        let response = await api._post(access_key + DATA_UPLOAD_ENDPOINT, data);
+        let blob = new Blob([data], {type: 'text/plain'});
+        let response = await api._post(access_key + DATA_UPLOAD_ENDPOINT, blob);
         console.log("Upload status = 200 ", response);
     }
     catch (err) {
