@@ -118,7 +118,7 @@ class API {
         // multipart encoding for file upload
         let data = new FormData();
         data.set('file', blob, filename);
-        return this._post(`${access_key}/bin/${session_id}/`, data);
+        return this._post(`${access_key}/upload-bin/${session_id}/`, data);
     }
 }
 
