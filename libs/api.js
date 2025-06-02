@@ -14,17 +14,17 @@ class API {
      * Performs a request
      * @param {string} url - URL for the request, relative to the base URL used when initializing the API class
      * @param {string} method - HTTP method (e.g. GET/POS)
-     * @param {string} data - Data to be sent to the server, in plain text
+     * @param {body} - any compatible Fetch body (see https://developer.mozilla.org/en-US/docs/Web/API/RequestInit#body)
      * @returns {Promise<Object>} a promise that contains the parsed JSON returned from the server
      */
-    _request(url, method, data) {
+    _request(url, method, body) {
         let retries = 5;
         let sleep = 500;
         let params = {
             method: method,
         };
-        if (typeof(data) !== 'undefined') {
-            params.body = new Blob([data], {type: 'text/plain'});
+        if (typeof(body) !== 'undefined') {
+            params.body = body;
         }
         return new Promise(async (resolve, reject) => {
             let response = null;
@@ -49,7 +49,12 @@ class API {
             }
 
             if (response.ok) {
-                resolve(await response.json());
+                if (response.status == 204) {// no content
+                    resolve()
+                }
+                else {
+                    resolve(await response.json());
+                }
             }
             else {
                 let clone = response.clone();
@@ -97,7 +102,23 @@ class API {
      * @returns {Promise<Object>} a promise that contains the parsed JSON returned from the server
      */
     sessionUpload(access_key, session_id, data) {
-        return this._post(`${access_key}/upload/${session_id}/`, data);
+        let blob = new Blob([data], {type: 'text/plain'});
+        return this._post(`${access_key}/upload/${session_id}/`, blob);
+    }
+
+    /**
+     * Upload a binary file to the server
+     * @param {string} access_key
+     * @param {string} session_id
+     * @param {Blob} blob
+     * @param {string} filename - optional
+     * @returns {Promise<void>}
+     */
+    uploadBinary(access_key, session_id, blob, filename) {
+        // multipart encoding for file upload
+        let data = new FormData();
+        data.set('file', blob, filename);
+        return this._post(`${access_key}/upload-bin/${session_id}/`, data);
     }
 }
 
