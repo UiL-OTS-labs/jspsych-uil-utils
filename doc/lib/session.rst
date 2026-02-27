@@ -8,4 +8,5 @@ to start a session and upload your data using this session.
 .. js:autofunction:: isActive
 .. js:autofunction:: start
 .. js:autofunction:: upload
+.. js:autofunction:: uploadBinary
 .. js:autofunction:: subjectId
