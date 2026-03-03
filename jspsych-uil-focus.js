@@ -35,6 +35,8 @@ let g_focus = null;
  * Get an aggregate structure that describes the statistics on how
  * dedicated the pc was to the experiment vs other tasks. All durations
  * are in seconds, as that is more intuitive than milliseconds.
+ *
+ * **TODO** document what focus and shows/hides mean.
  */
 class FocusStats {
     constructor (
@@ -46,12 +48,37 @@ class FocusStats {
         num_shows,
         num_hides
     ) {
+        /**
+         * Whether the client is currently looking at the desired page
+         */
         this.is_active = is_active;
+
+        /**
+         * The cumulative time that the participant is active
+         */
         this.cum_active= cum_active;
+
+        /**
+         * The cumulative time that the participant is **not** active
+         */
         this.cum_inactive = cum_inactive;
+
+        /**
+         * The number of time the browser focused on **our** tab
+         */
         this.num_focus = num_focus;
+
+        /**
+         * The number of times that **our** tab lost the focus
+         */
         this.num_focus_lost  = num_focus_lost;
+        /**
+         * The number of times that **our** tab is unhidden.
+         */
         this.num_shows = num_shows;
+        /**
+         * The number of times that **our** tab is hidden.
+         */
         this.num_hides = num_hides;
     }
 }
@@ -272,6 +299,10 @@ function clearUserFocus () {
  * Obtain the current statics about the user, losing and capturing the
  * focus of the window. It might be a measure on how dedicated the user was
  * vs how distracted the user was.
+ *
+ * @returns {FocusStats|undefined} The statistics since registerUserFocus()has been 
+ * called or undefined when registerUserFocus hasn't been called or clearUserFocus
+ * has been called.
  */
 function getStats() {
     return (g_focus !== null) ? g_focus.getStats() : undefined;

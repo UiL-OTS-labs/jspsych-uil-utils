@@ -31,7 +31,7 @@ let IlsSurveyPlugin = (function (jspsych) {
                 */
                 exclusion: {
                     type: jspsych.ParameterType.FUNCTION,
-                    default: {},
+                    default: undefined,
                 },
                 /**
                    Message for excluded participants

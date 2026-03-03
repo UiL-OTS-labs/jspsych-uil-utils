@@ -1,0 +1,4 @@
+# ignore the build folder
+_build
+# ignore the virtual enviroment for python
+venv

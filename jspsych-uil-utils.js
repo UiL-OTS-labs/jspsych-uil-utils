@@ -37,6 +37,7 @@ export {
     isOnline,
     setAccessKey,
     useAcceptationServer,
+    useCustomServer,
     stopIfExperimentClosed,
     saveData,
     saveJson,
@@ -73,7 +74,10 @@ const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
 let _access_key = undefined;
 
-let _acc_server = false;
+// SHOULD be one of 'production', 'acceptation' or 'custom'
+let _server_location = 'production';
+
+let _custom_server_url = undefined;
 
 let _datastore_metadata = undefined;
 
@@ -110,7 +114,8 @@ async function saveOnDataServer(access_key, server, data) {
     let api = new API(resolveServer());
 
     try {
-        let response = await api._post(access_key + DATA_UPLOAD_ENDPOINT, data);
+        let blob = new Blob([data], {type: 'text/plain'});
+        let response = await api._post(access_key + DATA_UPLOAD_ENDPOINT, blob);
         console.log("Upload status = 200 ", response);
     }
     catch (err) {
@@ -168,7 +173,7 @@ function getDatastoreMetadata(access_key, server) {
  * Simple check of whether the uuid seems valid.
  *
  * This test just checks whether the form of the uuid is correct, it
- * doesn't differntiate between version 1,2,3,4 or 5, nor does it
+ * doesn't differentiate between version 1,2,3,4 or 5, nor does it
  * check the variant.
  *
  * @param {string} id The id that should match a uuid
@@ -253,15 +258,37 @@ function setAccessKey (access_key) {
     return _access_key;
 }
 
-    /**
-     * Instructs all API methods to use the acceptation datastore server.
-     *
-     * Instructs all API methods to use the acceptation datastore server. This can
-     * be overriden on a per-call method using the ``acc_server`` parameter;
-     */
+/**
+ * Instructs all API methods to use the acceptation datastore server.
+ *
+ * Instructs all API methods to use the acceptation datastore server. This can
+ * be overriden on a per-call method using the ``acc_server`` parameter;
+ */
 function useAcceptationServer () {
-    _acc_server = true;
+    _server_location = "acceptation";
 }
+
+/**
+ * Instructs all API methods to use the server specified here
+ *
+ * By default, the uil-utils forward the user to the production datastore.
+ * Using the function useAcceptationServer(), one can use the acceptation server.
+ * Using this function you can choose a server at a specific url.
+ *
+ * @param endpoint {string} a url for the endpoint must end with /api/.
+ */
+function useCustomServer(endpoint) {
+    let regex = /.*?\/api\//;
+    if (endpoint.match(regex)) {
+        _server_location = "custom";
+        _custom_server_url = endpoint;
+    }
+    else {
+        throw new Error(`${useCustomServer.name}: ${endpoint} didn't match ${regex}`)
+    }
+}
+
+
 
 /**
  * This function will redirect the user away if the experiment is closed.
@@ -273,7 +300,7 @@ function useAcceptationServer () {
  *                 Optional if key is set using setAccessKey
  * @param {bool}   acc_server, true if the data should be stored at the
  *                 "acceptation server" for testing purposes. This parameter
- *                 is only usefull when running the experiment online
+ *                 is only useful when running the experiment online
  * @param {string} A page to land when the experiment is closed
  * @param {string} A page to land when the communication with the datastore
  *                 fails.
@@ -294,7 +321,7 @@ function stopIfExperimentClosed (
     }
 
     if (typeof(acc_server) === "undefined") {
-        acc_server = _acc_server;
+        acc_server = _server_location;
     }
 
     let is_online = isOnline();
@@ -302,10 +329,14 @@ function stopIfExperimentClosed (
 
     if (is_online) {
         let server = "";
-        if (!acc_server)
+        if (_server_location === 'production')
             server = DATA_STORE_PRODUCTION_SERVER;
-        else
+        else if (_server_location === 'acceptation')
             server = DATA_STORE_ACCEPTATION_SERVER;
+        else {
+            console.assert( _server_location === 'custom');
+            server = _custom_server_url;
+        }
 
         let getDatastoreMetadataResolve = function(data) {
             let state = data['state'];
@@ -393,7 +424,7 @@ function saveData (access_key, acc_server = undefined) {
  *                 Optional if key is set using setAccessKey
  * @param {bool}   acc_server, true if the data should be stored at the
  *                 "acceptation server" for testing purposes. This parameter
- *                 is only usefull when running the experiment online
+ *                 is only useful when running the experiment online
  * @memberof uil
  *
  * @returns {Promise| Promise<Object>} a promise that resolves when then
@@ -446,11 +477,15 @@ function saveJson (json, access_key, acc_server = undefined) {
  */
 function resolveServer (acc_server = undefined) {
     if (typeof(acc_server) === "undefined") {
-        acc_server = _acc_server;
+        acc_server = _server_location;
     }
 
-    if (!acc_server)
+    if (acc_server === 'production')
         return DATA_STORE_PRODUCTION_SERVER;
-    else
+    else if (acc_server === 'acceptation')
         return DATA_STORE_ACCEPTATION_SERVER;
+    else {
+        console.assert(acc_server === 'custom');
+        return _custom_server_url;
+    }
 }
