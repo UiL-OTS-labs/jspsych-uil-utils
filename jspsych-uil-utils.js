@@ -74,14 +74,10 @@ const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
 let _access_key = undefined;
 
-const _PRODUCTION = 1;
-const _ACCEPTION = 2;
-const _CUSTOM_SERVER = 3;
+// SHOULD be one of 'production', 'acceptation' or 'custom'
+let _server_location = 'production';
 
-// SHOULD be one of _PRODUCTION, _ACCEPTION or _CUSTOM
-let _acc_server = _PRODUCTION;
-
-let _custom_server_url = "";
+let _custom_server_url = undefined;
 
 let _datastore_metadata = undefined;
 
@@ -269,7 +265,7 @@ function setAccessKey (access_key) {
  * be overriden on a per-call method using the ``acc_server`` parameter;
  */
 function useAcceptationServer () {
-    _acc_server = _ACCEPTION;
+    _server_location = "acceptation";
 }
 
 /**
@@ -284,7 +280,7 @@ function useAcceptationServer () {
 function useCustomServer(endpoint) {
     let regex = /.*?\/api\//;
     if (endpoint.match(regex)) {
-        _acc_server = _CUSTOM_SERVER;
+        _server_location = "custom";
         _custom_server_url = endpoint;
     }
     else {
@@ -304,7 +300,7 @@ function useCustomServer(endpoint) {
  *                 Optional if key is set using setAccessKey
  * @param {bool}   acc_server, true if the data should be stored at the
  *                 "acceptation server" for testing purposes. This parameter
- *                 is only usefull when running the experiment online
+ *                 is only useful when running the experiment online
  * @param {string} A page to land when the experiment is closed
  * @param {string} A page to land when the communication with the datastore
  *                 fails.
@@ -325,7 +321,7 @@ function stopIfExperimentClosed (
     }
 
     if (typeof(acc_server) === "undefined") {
-        acc_server = _acc_server;
+        acc_server = _server_location;
     }
 
     let is_online = isOnline();
@@ -333,12 +329,12 @@ function stopIfExperimentClosed (
 
     if (is_online) {
         let server = "";
-        if (_acc_server === _PRODUCTION)
+        if (_server_location === 'production')
             server = DATA_STORE_PRODUCTION_SERVER;
-        else if (_acc_server === _ACCEPTION)
+        else if (_server_location === 'acceptation')
             server = DATA_STORE_ACCEPTATION_SERVER;
         else {
-            console.assert( _ACC_SERVER === _CUSTOM);
+            console.assert( _server_location === 'custom');
             server = _custom_server_url;
         }
 
@@ -428,7 +424,7 @@ function saveData (access_key, acc_server = undefined) {
  *                 Optional if key is set using setAccessKey
  * @param {bool}   acc_server, true if the data should be stored at the
  *                 "acceptation server" for testing purposes. This parameter
- *                 is only usefull when running the experiment online
+ *                 is only useful when running the experiment online
  * @memberof uil
  *
  * @returns {Promise| Promise<Object>} a promise that resolves when then
@@ -481,15 +477,15 @@ function saveJson (json, access_key, acc_server = undefined) {
  */
 function resolveServer (acc_server = undefined) {
     if (typeof(acc_server) === "undefined") {
-        acc_server = _acc_server;
+        acc_server = _server_location;
     }
 
-    if (acc_server === _PRODUCTION)
+    if (acc_server === 'production')
         return DATA_STORE_PRODUCTION_SERVER;
-    else if (acc_server === _ACCEPTION)
+    else if (acc_server === 'acceptation')
         return DATA_STORE_ACCEPTATION_SERVER;
     else {
-        console.assert(acc_server === _CUSTOM_SERVER);
+        console.assert(acc_server === 'custom');
         return _custom_server_url;
     }
 }
