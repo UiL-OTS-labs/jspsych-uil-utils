@@ -10,6 +10,7 @@ such, all functions/classes on this page should be used as follows:
 
 .. js:autofunction:: setAccessKey
 .. js:autofunction:: useAcceptationServer
+.. js:autofunction:: useCustomServer
 .. js:autofunction:: stopIfExperimentClosed
 .. js:autofunction:: saveData
 .. js:autofunction:: saveJson
