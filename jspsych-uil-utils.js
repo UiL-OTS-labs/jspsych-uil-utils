@@ -37,6 +37,7 @@ export {
     isOnline,
     setAccessKey,
     useAcceptationServer,
+    useCustomServer,
     stopIfExperimentClosed,
     saveData,
     saveJson,
@@ -73,7 +74,14 @@ const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
 let _access_key = undefined;
 
-let _acc_server = false;
+const _PRODUCTION = 1;
+const _ACCEPTION = 2;
+const _CUSTOM_SERVER = 3;
+
+// SHOULD be one of _PRODUCTION, _ACCEPTION or _CUSTOM
+let _acc_server = _PRODUCTION;
+
+let _custom_server_url = "";
 
 let _datastore_metadata = undefined;
 
@@ -169,7 +177,7 @@ function getDatastoreMetadata(access_key, server) {
  * Simple check of whether the uuid seems valid.
  *
  * This test just checks whether the form of the uuid is correct, it
- * doesn't differntiate between version 1,2,3,4 or 5, nor does it
+ * doesn't differentiate between version 1,2,3,4 or 5, nor does it
  * check the variant.
  *
  * @param {string} id The id that should match a uuid
@@ -254,15 +262,37 @@ function setAccessKey (access_key) {
     return _access_key;
 }
 
-    /**
-     * Instructs all API methods to use the acceptation datastore server.
-     *
-     * Instructs all API methods to use the acceptation datastore server. This can
-     * be overriden on a per-call method using the ``acc_server`` parameter;
-     */
+/**
+ * Instructs all API methods to use the acceptation datastore server.
+ *
+ * Instructs all API methods to use the acceptation datastore server. This can
+ * be overriden on a per-call method using the ``acc_server`` parameter;
+ */
 function useAcceptationServer () {
-    _acc_server = true;
+    _acc_server = _ACCEPTION;
 }
+
+/**
+ * Instructs all API methods to use the server specified here
+ *
+ * By default, the uil-utils forward the user to the production datastore.
+ * Using the function useAcceptationServer(), one can use the acceptation server.
+ * Using this function you can choose a server at a specific url.
+ *
+ * @param endpoint {string} a url for the endpoint must end with /api/.
+ */
+function useCustomServer(endpoint) {
+    let regex = /.*?\/api\//;
+    if (endpoint.match(regex)) {
+        _acc_server = _CUSTOM_SERVER;
+        _custom_server_url = endpoint;
+    }
+    else {
+        throw new Error(`${useCustomServer.name}: ${endpoint} didn't match ${regex}`)
+    }
+}
+
+
 
 /**
  * This function will redirect the user away if the experiment is closed.
@@ -303,10 +333,14 @@ function stopIfExperimentClosed (
 
     if (is_online) {
         let server = "";
-        if (!acc_server)
+        if (_acc_server === _PRODUCTION)
             server = DATA_STORE_PRODUCTION_SERVER;
-        else
+        else if (_acc_server === _ACCEPTION)
             server = DATA_STORE_ACCEPTATION_SERVER;
+        else {
+            console.assert( _ACC_SERVER === _CUSTOM);
+            server = _custom_server_url;
+        }
 
         let getDatastoreMetadataResolve = function(data) {
             let state = data['state'];
@@ -450,8 +484,12 @@ function resolveServer (acc_server = undefined) {
         acc_server = _acc_server;
     }
 
-    if (!acc_server)
+    if (acc_server === _PRODUCTION)
         return DATA_STORE_PRODUCTION_SERVER;
-    else
+    else if (acc_server === _ACCEPTION)
         return DATA_STORE_ACCEPTATION_SERVER;
+    else {
+        console.assert(acc_server === _CUSTOM_SERVER);
+        return _custom_server_url;
+    }
 }
