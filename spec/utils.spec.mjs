@@ -65,6 +65,29 @@ describe('saveJson', () => {
         expect(await args[1].body.text()).toBe(JSON.stringify(data));
     });
 
+    it ('should be possible to use a custom server', async () => {
+        const DOMAIN = "some-dutch-domain.nl";
+
+        let win = {location: {protocol:'https:', hostname:DOMAIN}};
+        spyOnProperty(window, '$window').and.returnValue(win);
+
+        let fetch = spyOn(window, 'fetch')
+            .and.returnValue(new Promise(function (){}));
+        
+        utils.useCustomServer(DOMAIN + "/api/"); // pick custom address
+        utils.saveJson(JSON.stringify(data), key);
+
+        let args = fetch.calls.first().args;
+        expect(args[0]).toMatch(/^.*some-dutch-domain.nl\/api\/.*$/);
+        expect(args[1].body.type).toBe('text/plain');
+        expect(await args[1].body.text()).toBe(JSON.stringify(data));
+    });
+
+    it ('should reject invalid custom endpoints', () => {
+        const DOMAIN = "some-dutch-domain.nl";
+        expect(() => {utils.useCustomServer(DOMAIN)}).toThrow(); // oops no /api/ at the end.
+    });
+
     it('should display json when offline', async () => {
         let open = spyOn(window, 'open');
 
